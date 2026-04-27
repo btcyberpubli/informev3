@@ -453,6 +453,117 @@
             font-weight: 700 !important;
         }
 
+        /* MODAL CREATIVO */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 12px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close-btn:hover {
+            color: #2c3e50;
+        }
+
+        .modal-image {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            max-height: 400px;
+            object-fit: contain;
+        }
+
+        .modal-info {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .modal-info-row {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .modal-info-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* BOTÓN VER CREATIVO */
+        .btn-creativo {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .btn-creativo:hover {
+            box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-creativo:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .estado-activo {
             color: #27ae60;
             font-weight: 700;
@@ -1027,6 +1138,9 @@
                             <span class="campaign-stat-label">Estado</span>
                             <span class="campaign-stat-value ${estado === 'Activa' ? 'estado-activo' : 'estado-pausado'}">${estado}</span>
                         </div>
+                        <div class="campaign-stat-item">
+                            <button class="btn-creativo" onclick="abrirModalCreativo(${JSON.stringify(campania).replace(/"/g, '&quot;')})">👁️ Ver Creativo</button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1142,6 +1256,82 @@
 
         window.addEventListener('beforeunload', () => {
             if (autoRefreshId) clearInterval(autoRefreshId);
+        });
+    </script>
+
+    <!-- MODAL CREATIVO -->
+    <div id="modalCreativo" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Creativo de la Campaña</h2>
+                <button class="modal-close-btn" onclick="cerrarModalCreativo()">&times;</button>
+            </div>
+            <img id="modalImage" class="modal-image" src="" alt="Creativo">
+            <div class="modal-info">
+                <div class="modal-info-row">
+                    <span class="modal-info-label">Campaña:</span>
+                    <span id="modalCampanaName">-</span>
+                </div>
+                <div class="modal-info-row">
+                    <span class="modal-info-label">Gasto:</span>
+                    <span id="modalGasto">-</span>
+                </div>
+                <div class="modal-info-row">
+                    <span class="modal-info-label">Ads:</span>
+                    <span id="modalAds">-</span>
+                </div>
+                <div class="modal-info-row">
+                    <span class="modal-info-label">CLY:</span>
+                    <span id="modalCLY">-</span>
+                </div>
+                <div class="modal-info-row">
+                    <span class="modal-info-label">Costo por Mensaje:</span>
+                    <span id="modalCosto">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalCreativo(campania) {
+            const imagenUrl = campania.imagenes?.image_url || campania.imagenes?.thumbnail_url || '';
+            
+            if (!imagenUrl) {
+                alert('⚠️ No hay imagen disponible para esta campaña');
+                return;
+            }
+
+            const gasto = parseFloat(campania.metricas_diarias?.spend || 0);
+            const ads = campania.metricas_diarias?.messages || 0;
+            const clv = campania.cly_para_campania || 0;
+            const costoPorMensaje = clv > 0 ? (gasto / clv).toFixed(4) : 0;
+
+            document.getElementById('modalImage').src = imagenUrl;
+            document.getElementById('modalCampanaName').textContent = campania.nombre;
+            document.getElementById('modalGasto').textContent = '$' + gasto.toFixed(2);
+            document.getElementById('modalAds').textContent = ads;
+            document.getElementById('modalCLY').textContent = clv;
+            document.getElementById('modalCosto').textContent = '$' + costoPorMensaje;
+
+            document.getElementById('modalCreativo').classList.add('active');
+        }
+
+        function cerrarModalCreativo() {
+            document.getElementById('modalCreativo').classList.remove('active');
+        }
+
+        // Cerrar modal al hacer click fuera
+        document.getElementById('modalCreativo').addEventListener('click', (e) => {
+            if (e.target.id === 'modalCreativo') {
+                cerrarModalCreativo();
+            }
+        });
+
+        // Cerrar modal con tecla ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                cerrarModalCreativo();
+            }
         });
     </script>
 </body>
