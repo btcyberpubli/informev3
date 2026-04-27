@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Informe - Superbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #00ff00;
+            color: #333;
+        }
+
+        /* PANELS LAYOUT */
+        .panels-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .panel-section {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .panel-info {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            background: #f9f9f9;
+        }
+
+        .panel-info-header {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #333;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .panel-info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .panel-info-label {
+            color: #666;
+            font-weight: bold;
+        }
+
+        .panel-info-value {
+            color: #333;
+            font-weight: bold;
+        }
+
+        .campaigns-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .campaign-bar {
+            background: linear-gradient(90deg, #00ff00 0%, #00cc00 100%);
+            padding: 10px 15px;
+            border-radius: 4px;
+            color: white;
+            font-size: 13px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .campaign-bar-name {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .campaign-bar-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .campaign-stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .campaign-stat-label {
+            color: rgba(255,255,255,0.8);
+            font-size: 11px;
+        }
+
+        .campaign-stat-value {
+            font-weight: bold;
+            color: white;
+        }
+
+        .totales-cargas {
+            padding: 10px 15px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            text-align: right;
+            color: #333;
+        }
+
+        /* SALDOS TABLE */
+        .saldos-section {
+            margin-top: 30px;
+        }
+
+        .saldos-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .saldos-table thead {
+            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
+            color: white;
+        }
+
+        .saldos-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .saldos-table tbody tr {
+            border-bottom: 1px solid #eee;
+        }
+
+        .saldos-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .saldos-table td {
+            padding: 12px;
+        }
+
+        .saldos-table td:last-child {
+            text-align: right;
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        .panel-name {
+            font-weight: bold;
+        }
+
+        .usuario-name {
+            font-weight: bold;
+        }
+
+        .total-row {
+            background: #f0f0f0;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .total-row td:last-child {
+            background: #36b8c5;
+            color: #FFFF00;
+            font-size: 18px;
+        }
+
+        .total-row {
+            background: #36b8c5 !important;
+            color: #FFFF00 !important;
+        }
+
+        /* ALERTAS Y ESTADOS */
+        .alerta-rojo {
+            background: #ff0000 !important;
+            color: white !important;
+        }
+
+        .estado-activo {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .estado-pausado {
+            color: #FF9800;
+            font-weight: bold;
+        }
+
+        .timestamp-box {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .refresh-btn {
+            background: #00ff00;
+            color: black;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .refresh-btn:hover {
+            background: #00cc00;
+        }
+
+        .refresh-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .panel-section {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .saldos-table {
+                font-size: 12px;
+            }
+
+            .saldos-table th,
+            .saldos-table td {
+                padding: 8px;
+            }
+
+            .campaign-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .campaign-bar-stats {
+                flex-direction: column;
+                width: 100%;
+                gap: 5px;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #ffcccc;
+            color: #cc0000;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>📊 Informe Turno Mañana</h1>
+            </div>
+            <div style="display: flex; align-items: center;">
+                <div class="timestamp" id="timestamp">Cargando...</div>
+                <button class="refresh-btn" id="refreshBtn" onclick="cargarDatos()">🔄 Actualizar</button>
+            </div>
+        </div>
+
+        <div id="timestampBox" class="timestamp-box" style="display: none;"></div>
+
+        <div id="content">
+            <div class="loading">⏳ Cargando datos...</div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            ENDPOINT: "https://accountant-services.co.uk/root/superbot1.0",
+            API_KEY: "clave-super-secreta",
+            REFRESH_INTERVAL: 60000 // 60 segundos
+        };
+
+        let datosGlobales = {};
+        let ultimaActualizacion = null;
+        let autoRefreshId = null;
+
+        // ========== FUNCIONES AUXILIARES ==========
+
+        /**
+         * Formatear valor a moneda ARS
+         */
+        function formatearMoneda(valor) {
+            return new Intl.NumberFormat('es-AR', {
+                style: 'currency',
+                currency: 'ARS',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(valor);
+        }
+
+        /**
+         * Normalizar nombre: trim, lowercase, capitalize
+         */
+        function normalizarNombre(nombre) {
+            if (!nombre) return '';
+            return nombre
+                .trim()
+                .toLowerCase()
+                .charAt(0).toUpperCase() + nombre.slice(1);
+        }
+
+        /**
+         * Validar estructura completa de datos VPS
+         */
+        function validarDatosVPS(data) {
+            if (!data.success) {
+                throw new Error("❌ Respuesta con success = false");
+            }
+            if (!data.reportePaneles || !Array.isArray(data.reportePaneles)) {
+                throw new Error("❌ reportePaneles ausente o inválido");
+            }
+            if (!data.campaniasMetaAds || !data.campaniasMetaAds.datos) {
+                throw new Error("❌ campaniasMetaAds.datos ausente");
+            }
+            if (!data.horariosMetaAds) {
+                throw new Error("❌ horariosMetaAds ausente");
+            }
+            return true;
+        }
+
+        /**
+         * Obtener saldos restantes por usuario (como en AppScript)
+         */
+        function obtenerSaldosRestantes(campaniasMetaAds) {
+            const saldosRestantes = {};
+            const usuarios = campaniasMetaAds.datos || [];
+
+            usuarios.forEach(usuario => {
+                const nombreDueño = normalizarNombre(usuario.nombre);
+                saldosRestantes[nombreDueño] = 0;
+
+                if (Array.isArray(usuario.cuentas)) {
+                    usuario.cuentas.forEach(cuenta => {
+                        const spendCap = parseFloat(cuenta.saldos?.spend_cap) || 0;
+                        const amountSpent = parseFloat(cuenta.saldos?.amount_spent) || 0;
+                        // Convertir de centavos a pesos
+                        saldosRestantes[nombreDueño] += (spendCap - amountSpent) / 100;
+                    });
+                }
+            });
+
+            return saldosRestantes;
+        }
+
+        /**
+         * Cargar datos SOLO desde VPS (sin fallback a local)
+         */
+        async function cargarDatos() {
+            const contentDiv = document.getElementById('content');
+            const refreshBtn = document.getElementById('refreshBtn');
+            
+            if (refreshBtn) refreshBtn.disabled = true;
+
+            try {
+                contentDiv.innerHTML = '<div class="loading">⏳ Conectando con servidor...</div>';
+                
+                // Fetch SOLO desde VPS - SIN FALLBACK
+                let datos = await fetchDesdeVPS();
+                
+                datosGlobales = datos;
+                ultimaActualizacion = new Date();
+                
+                renderizarDashboard();
+                mostrarUltimaActualizacion();
+                
+                // Reiniciar auto-refresh
+                iniciarAutoRefresh();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                
+                // ERROR CRÍTICO - NO hay fallback
+                contentDiv.innerHTML = 
+                    `<div class="error" style="background: #ffcccc; color: #cc0000; padding: 20px; border-radius: 6px; margin: 20px;">
+                        <strong>❌ ERROR DE CONEXIÓN CON EL SERVIDOR</strong><br><br>
+                        <strong>Endpoint:</strong> ${CONFIG.ENDPOINT}<br>
+                        <strong>Motivo:</strong> ${error.message}<br><br>
+                        <small>Asegúrate de que:</small>
+                        <ul>
+                            <li>El servidor VPS esté disponible</li>
+                            <li>La URL sea correcta</li>
+                            <li>La API key sea válida</li>
+                            <li>No haya problemas de red</li>
+                        </ul>
+                        <button class="refresh-btn" onclick="cargarDatos()" style="margin-top: 15px;">🔄 Reintentar</button>
+                    </div>`;
+            } finally {
+                if (refreshBtn) refreshBtn.disabled = false;
+            }
+        }
+
+        /**
+         * Realizar fetch real desde VPS
+         */
+        async function fetchDesdeVPS() {
+            const options = {
+                method: 'GET',
+                headers: {
+                    'x-api-key': CONFIG.API_KEY,
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            const response = await fetch(CONFIG.ENDPOINT, options);
+            
+            if (!response.ok) {
+                throw new Error(
+                    `HTTP ${response.status}: ${response.statusText}`
+                );
+            }
+
+            const datos = await response.json();
+            validarDatosVPS(datos);
+            
+            return datos;
+        }
+
+        /**
+         * Mostrar última actualización
+         */
+        function mostrarUltimaActualizacion() {
+            const box = document.getElementById('timestampBox');
+            if (!box) return;
+
+            const formato = new Intl.DateTimeFormat('es-AR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+
+            box.textContent = `🕒 Última actualización: ${formato.format(ultimaActualizacion)}`;
+            box.style.display = 'block';
+        }
+
+        /**
+         * Iniciar auto-refresh cada X segundos
+         */
+        function iniciarAutoRefresh() {
+            if (autoRefreshId) clearInterval(autoRefreshId);
+            
+            autoRefreshId = setInterval(() => {
+                console.log('Auto-refresh...');
+                cargarDatos();
+            }, CONFIG.REFRESH_INTERVAL);
+        }
+
+        /**
+         * Renderizar dashboard completo
+         */
+        function renderizarDashboard() {
+            const timestamp = datosGlobales.horariosMetaAds?.inicio || 
+                            new Date().toLocaleString('es-AR');
+            document.getElementById('timestamp').textContent = `Fecha: ${timestamp}`;
+
+            let html = '';
+
+            // SECCIÓN 1: INFORME DE PANELES
+            html += renderizarInformePaneles();
+
+            // SECCIÓN 2: TABLA DE SALDOS
+            html += renderizarTablaSaldos();
+
+            document.getElementById('content').innerHTML = html;
+        }
+
+        /**
+         * Renderizar sección de paneles
+         */
+        function renderizarInformePaneles() {
+            if (!datosGlobales.reportePaneles || datosGlobales.reportePaneles.length === 0) {
+                return '<div class="section"><p class="error">❌ No hay datos de paneles disponibles</p></div>';
+            }
+
+            let html = '<div class="section">';
+            html += '<div class="section-title">📋 Informe de Paneles</div>';
+            html += '<div class="panels-container">';
+
+            const campaniasPorPanel = agruparCampaniasPorPanel();
+
+            datosGlobales.reportePaneles.forEach(panel => {
+                html += generarSeccionPanel(panel, campaniasPorPanel[panel.panel] || []);
+            });
+
+            html += '</div></div>';
+            return html;
+        }
+
+        /**
+         * Agrupar campañas por panel
+         */
+        function agruparCampaniasPorPanel() {
+            const mapeo = {};
+            const campaniasMetaAds = datosGlobales.campaniasMetaAds?.datos || [];
+
+            campaniasMetaAds.forEach(usuario => {
+                usuario.cuentas?.forEach(cuenta => {
+                    cuenta.campanias?.forEach(campania => {
+                        datosGlobales.reportePaneles?.forEach(panel => {
+                            if (campania.nombre.toLowerCase().includes(panel.panel.toLowerCase()) ||
+                                campania.nombre.toLowerCase().includes(usuario.nombre.toLowerCase())) {
+                                if (!mapeo[panel.panel]) mapeo[panel.panel] = [];
+                                mapeo[panel.panel].push({ ...campania, usuario: usuario.nombre });
+                            }
+                        });
+                    });
+                });
+            });
+
+            return mapeo;
+        }
+
+        /**
+         * Generar sección de un panel
+         */
+        function generarSeccionPanel(panel, campanias) {
+            const usuariosPanel = datosGlobales.campaniasMetaAds?.datos?.map(u => u.nombre) || [];
+            
+            let html = '<div class="panel-section">';
+            
+            html += '<div class="panel-info">';
+            html += `<div class="panel-info-header">▶ ${panel.panel.toUpperCase()} CODIGO: ${panel.id}</div>`;
+            html += `<div class="panel-info-row">
+                <span class="panel-info-label">FB</span>
+                <span class="panel-info-value">${usuariosPanel.find(u => panel.panel.toLowerCase().includes(u.toLowerCase())) || 'N/A'}</span>
+            </div>`;
+            html += `<div class="panel-info-row">
+                <span class="panel-info-label">Total</span>
+                <span class="panel-info-value">${panel.total_mensajes_hoy}/500</span>
+            </div>`;
+            html += `<div class="panel-info-row">
+                <span class="panel-info-label">Total Clientify</span>
+                <span class="panel-info-value">${panel.cargas_hoy}/500</span>
+            </div>`;
+            html += '</div>';
+
+            html += '<div>';
+            if (campanias.length > 0) {
+                html += '<div class="campaigns-list">';
+                campanias.forEach(campania => {
+                    html += generarBarraCampania(campania);
+                });
+                html += '</div>';
+                html += `<div class="totales-cargas">Totales cargas ${panel.cargas_hoy}</div>`;
+            } else {
+                html += '<div style="padding: 10px; color: #999;">Sin campañas Meta Ads</div>';
+                html += `<div class="totales-cargas">Totales cargas ${panel.cargas_hoy}</div>`;
+            }
+            html += '</div>';
+
+            html += '</div>';
+            return html;
+        }
+
+        /**
+         * Generar barra de campaña
+         */
+        function generarBarraCampania(campania) {
+            const metricas = campania.metricas_diarias || {};
+            const estado = campania.estado === 'ACTIVE' ? 'Activa' : 'Pausada';
+            const gasto = (metricas.spend || 0).toFixed(2);
+            const costoPorMensaje = (metricas.costoPorMensaje || 0).toFixed(2);
+            const mensajes = metricas.messages || 0;
+
+            return `
+                <div class="campaign-bar">
+                    <span class="campaign-bar-name">${campania.nombre}</span>
+                    <div class="campaign-bar-stats">
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-label">Gasto</span>
+                            <span class="campaign-stat-value">$${gasto}</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-label">Ads</span>
+                            <span class="campaign-stat-value">${mensajes}</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-label">Clv</span>
+                            <span class="campaign-stat-value">${mensajes}</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-label">$</span>
+                            <span class="campaign-stat-value">$${costoPorMensaje}</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-label"></span>
+                            <span class="campaign-stat-value ${estado === 'Activa' ? 'estado-activo' : 'estado-pausado'}">${estado}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Renderizar tabla de saldos
+         */
+        function renderizarTablaSaldos() {
+            if (!datosGlobales.campaniasMetaAds || !datosGlobales.campaniasMetaAds.datos) {
+                return '';
+            }
+
+            const usuarios = datosGlobales.campaniasMetaAds.datos || [];
+            const saldosRestantes = obtenerSaldosRestantes(datosGlobales.campaniasMetaAds);
+
+            let htmlTabla = '<div class="section saldos-section">';
+            htmlTabla += '<div class="section-title">💰 Saldos Consolidados</div>';
+            htmlTabla += '<table class="saldos-table">';
+            htmlTabla += `
+                <thead>
+                    <tr>
+                        <th>Panel</th>
+                        <th>MSJ Diarios</th>
+                        <th>Beneficio</th>
+                        <th>Usuario (FB/Meta)</th>
+                        <th>Saldo Actual</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+            let totalSaldo = 0;
+            const yaImpresos = {};
+
+            usuarios.forEach(usuario => {
+                if (!usuario.cuentas) return;
+
+                usuario.cuentas.forEach(cuenta => {
+                    const nombreNormalizado = normalizarNombre(usuario.nombre);
+                    
+                    // Evitar duplicados
+                    if (yaImpresos[nombreNormalizado]) return;
+
+                    const saldosInfo = cuenta.saldos || {};
+                    const balance = (parseFloat(saldosInfo.balance) || 0) / 100;
+                    const spend_cap = (parseFloat(saldosInfo.spend_cap) || 0) / 100;
+                    const amount_spent = (parseFloat(saldosInfo.amount_spent) || 0) / 100;
+                    
+                    totalSaldo += balance;
+
+                    // Buscar panel asociado
+                    const panelAsociado = datosGlobales.reportePaneles.find(p => 
+                        p.panel.toLowerCase().includes(nombreNormalizado.toLowerCase()) ||
+                        nombreNormalizado.toLowerCase().includes(p.panel.toLowerCase())
+                    );
+
+                    const panelNombre = panelAsociado?.panel || usuario.nombre;
+                    const mensajesDiarios = panelAsociado?.total_mensajes_hoy || '-';
+                    const beneficio = panelAsociado?.cargas_hoy || '-';
+
+                    // Detectar alerta si gasto > límite
+                    let claseAlerta = '';
+                    if (amount_spent > spend_cap) {
+                        claseAlerta = ' alerta-rojo';
+                    }
+
+                    htmlTabla += `
+                        <tr${claseAlerta ? ` class="${claseAlerta}"` : ''}>
+                            <td class="panel-name">${panelNombre}</td>
+                            <td>${mensajesDiarios}</td>
+                            <td>${beneficio}</td>
+                            <td class="usuario-name">${usuario.nombre}</td>
+                            <td style="text-align: right; font-weight: bold; color: #00ff00;">
+                                ${formatearMoneda(balance)}
+                            </td>
+                        </tr>
+                    `;
+
+                    yaImpresos[nombreNormalizado] = true;
+                });
+            });
+
+            htmlTabla += `
+                <tr class="total-row">
+                    <td colspan="4">TOTAL</td>
+                    <td>${formatearMoneda(totalSaldo)}</td>
+                </tr>
+            `;
+
+            htmlTabla += `
+                    </tbody>
+                </table>
+            </div>`;
+
+            return htmlTabla;
+        }
+
+        // Iniciar al cargar la página
+        window.addEventListener('DOMContentLoaded', () => {
+            cargarDatos();
+        });
+
+        // Limpiar interval al cerrar
+        window.addEventListener('beforeunload', () => {
+            if (autoRefreshId) clearInterval(autoRefreshId);
+        });
+    </script>
+</body>
+</html>
