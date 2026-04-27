@@ -156,6 +156,22 @@
             color: white;
         }
 
+        .alerta-precio {
+            background-color: #FFFF00 !important;
+            color: #000 !important;
+            padding: 5px 10px !important;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .alerta-precio .campaign-stat-label {
+            color: #000 !important;
+        }
+
+        .alerta-precio .campaign-stat-value {
+            color: #000 !important;
+        }
+
         .totales-cargas {
             padding: 10px 15px;
             background: #f0f0f0;
@@ -476,7 +492,6 @@
             const options = {
                 method: 'GET',
                 headers: {
-                    'x-api-key': CONFIG.API_KEY,
                     'Content-Type': 'application/json'
                 }
             };
@@ -641,8 +656,12 @@
             const metricas = campania.metricas_diarias || {};
             const estado = campania.estado === 'ACTIVE' ? 'Activa' : 'Pausada';
             const gasto = (metricas.spend || 0).toFixed(2);
-            const costoPorMensaje = (metricas.costoPorMensaje || 0).toFixed(2);
+            const costoPorMensaje = parseFloat(metricas.costoPorMensaje || 0);
+            const costoPorMensajeStr = costoPorMensaje.toFixed(2);
             const mensajes = metricas.messages || 0;
+
+            // Detectar si costoPorMensaje > 1.00 para pintar de amarillo
+            const esAlertaPrecio = costoPorMensaje > 1.00;
 
             return `
                 <div class="campaign-bar">
@@ -660,9 +679,9 @@
                             <span class="campaign-stat-label">Clv</span>
                             <span class="campaign-stat-value">${mensajes}</span>
                         </div>
-                        <div class="campaign-stat-item">
+                        <div class="campaign-stat-item ${esAlertaPrecio ? 'alerta-precio' : ''}">
                             <span class="campaign-stat-label">$</span>
-                            <span class="campaign-stat-value">$${costoPorMensaje}</span>
+                            <span class="campaign-stat-value">$${costoPorMensajeStr}</span>
                         </div>
                         <div class="campaign-stat-item">
                             <span class="campaign-stat-label"></span>
