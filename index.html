@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Informe - Superbot</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -12,100 +13,165 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-            padding: 20px;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            padding: 12px;
+            color: #2c3e50;
+            min-height: 100vh;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
         }
 
         .header {
-            background: white;
-            padding: 20px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 16px 18px;
             border-radius: 8px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 16px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            color: white;
         }
 
         .header h1 {
             font-size: 24px;
-            color: #333;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
         .timestamp {
-            color: #666;
-            font-size: 14px;
+            color: rgba(255,255,255,0.85);
+            font-size: 12px;
+            font-weight: 500;
         }
 
         .section {
             background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-top: 4px solid #27ae60;
         }
 
         .section-title {
             font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #00ff00;
-            color: #333;
+            border-bottom: 2px solid #27ae60;
+            color: #2c3e50;
+            letter-spacing: -0.3px;
+        }
+
+        /* BUTTONS */
+        .btn {
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-refresh {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+        }
+
+        .btn-refresh:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(39, 174, 96, 0.4);
+        }
+
+        .btn-export {
+            background: linear-gradient(135deg, #2980b9 0%, #2471a3 100%);
+            color: white;
+            box-shadow: 0 4px 8px rgba(41, 128, 185, 0.3);
+        }
+
+        .btn-export:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(41, 128, 185, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         /* PANELS LAYOUT */
         .panels-container {
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 12px;
         }
 
         .panel-section {
             display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 20px;
+            grid-template-columns: 260px 1fr;
+            gap: 16px;
             align-items: flex-start;
+            background: #f8f9fa;
+            padding: 14px;
+            border-radius: 6px;
+            border-left: 4px solid #27ae60;
         }
 
         .panel-info {
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 15px;
-            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 14px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .panel-info-header {
-            font-weight: bold;
+            font-weight: 700;
             font-size: 14px;
             margin-bottom: 10px;
-            color: #333;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ddd;
+            color: #2c3e50;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #27ae60;
         }
 
         .panel-info-row {
             display: flex;
             justify-content: space-between;
             font-size: 13px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            padding: 5px 0;
         }
 
         .panel-info-label {
-            color: #666;
-            font-weight: bold;
+            color: #7f8c8d;
+            font-weight: 600;
+            min-width: 80px;
         }
 
         .panel-info-value {
-            color: #333;
-            font-weight: bold;
+            color: #2c3e50;
+            font-weight: 700;
+            text-align: right;
+            font-size: 13px;
         }
 
         .campaigns-list {
@@ -115,202 +181,319 @@
         }
 
         .campaign-bar {
-            background: linear-gradient(90deg, #00ff00 0%, #00cc00 100%);
-            padding: 10px 15px;
+            background: #f8f9fa;
+            padding: 10px 12px;
             border-radius: 4px;
-            color: white;
-            font-size: 13px;
-            font-weight: bold;
+            color: #2c3e50;
+            font-size: 12px;
+            font-weight: 500;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 10px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s ease;
+        }
+
+        /* FONDOS SUAVES POR RANGO DE PRECIO */
+        .campaign-bar.campania-fondo-verde {
+            background: #d5f4e6;
+            border-color: #a9dcc8;
+        }
+
+        .campaign-bar.campania-fondo-amarillo {
+            background: #fef5e7;
+            border-color: #f9e79f;
+        }
+
+        .campaign-bar.campania-fondo-naranja {
+            background: #fdebd0;
+            border-color: #f8b88b;
+        }
+
+        .campaign-bar.campania-fondo-rojo {
+            background: #fadbd8;
+            border-color: #f5b7b1;
+        }
+
+        .campaign-bar:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .campaign-bar-name {
             flex: 1;
-            min-width: 250px;
+            min-width: 200px;
+            font-weight: 600;
+            color: #2c3e50;
         }
 
         .campaign-bar-stats {
             display: flex;
-            gap: 20px;
+            gap: 12px;
             align-items: center;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .campaign-stat-item {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 2px;
+            padding: 3px 6px;
+            border-radius: 3px;
+            background: transparent;
         }
 
         .campaign-stat-label {
-            color: rgba(255,255,255,0.8);
-            font-size: 11px;
+            color: #7f8c8d;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
 
         .campaign-stat-value {
-            font-weight: bold;
-            color: white;
+            font-weight: 700;
+            color: #2c3e50;
+            font-size: 12px;
         }
 
-        .alerta-precio {
-            background-color: #FFFF00 !important;
-            color: #000 !important;
-            padding: 5px 10px !important;
-            border-radius: 4px;
-            font-weight: bold;
+        /* SISTEMA DE COLORES POR RANGO DE PRECIO CPM */
+        .precio-verde {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
+            color: white !important;
+            padding: 4px 8px !important;
+            border-radius: 3px;
+            font-weight: 700 !important;
+            box-shadow: 0 2px 4px rgba(39, 174, 96, 0.3);
         }
 
-        .alerta-precio .campaign-stat-label {
-            color: #000 !important;
+        .precio-verde .campaign-stat-label {
+            color: rgba(255,255,255,0.9) !important;
+            font-size: 9px !important;
         }
 
-        .alerta-precio .campaign-stat-value {
-            color: #000 !important;
+        .precio-verde .campaign-stat-value {
+            color: white !important;
+            font-size: 12px !important;
+        }
+
+        .precio-amarillo {
+            background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%) !important;
+            color: #2c3e50 !important;
+            padding: 4px 8px !important;
+            border-radius: 3px;
+            font-weight: 700 !important;
+            box-shadow: 0 2px 4px rgba(241, 196, 15, 0.3);
+        }
+
+        .precio-amarillo .campaign-stat-label {
+            color: #2c3e50 !important;
+            font-size: 9px !important;
+        }
+
+        .precio-amarillo .campaign-stat-value {
+            color: #2c3e50 !important;
+            font-size: 12px !important;
+        }
+
+        .precio-naranja {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%) !important;
+            color: white !important;
+            padding: 4px 8px !important;
+            border-radius: 3px;
+            font-weight: 700 !important;
+            box-shadow: 0 2px 4px rgba(243, 156, 18, 0.3);
+        }
+
+        .precio-naranja .campaign-stat-label {
+            color: rgba(255,255,255,0.9) !important;
+            font-size: 9px !important;
+        }
+
+        .precio-naranja .campaign-stat-value {
+            color: white !important;
+            font-size: 12px !important;
+        }
+
+        .precio-rojo {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+            color: white !important;
+            padding: 4px 8px !important;
+            border-radius: 3px;
+            font-weight: 700 !important;
+            box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
+        }
+
+        .precio-rojo .campaign-stat-label {
+            color: rgba(255,255,255,0.9) !important;
+            font-size: 9px !important;
+        }
+
+        .precio-rojo .campaign-stat-value {
+            color: white !important;
+            font-size: 12px !important;
         }
 
         .totales-cargas {
-            padding: 10px 15px;
-            background: #f0f0f0;
+            padding: 8px 10px;
+            background: #ecf0f1;
             border-radius: 4px;
-            font-size: 13px;
-            font-weight: bold;
+            font-size: 12px;
+            font-weight: 700;
             text-align: right;
-            color: #333;
+            color: #2c3e50;
+            border-left: 3px solid #27ae60;
         }
 
         /* SALDOS TABLE */
         .saldos-section {
-            margin-top: 30px;
+            margin-top: 20px;
         }
 
         .saldos-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .saldos-table thead {
-            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
             color: white;
         }
 
-        .saldos-table th {
-            padding: 12px;
+        .saldos-table thead th {
+            padding: 10px;
             text-align: left;
-            font-weight: bold;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid #27ae60;
         }
 
         .saldos-table tbody tr {
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #e0e0e0;
+            transition: all 0.2s ease;
         }
 
         .saldos-table tbody tr:hover {
-            background: #f9f9f9;
+            background: #f8f9fa;
         }
 
         .saldos-table td {
-            padding: 12px;
+            padding: 10px;
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 12px;
         }
 
-        .saldos-table td:last-child {
+        .saldos-table .panel-name {
+            font-weight: 700;
+            color: #27ae60;
+        }
+
+        .saldos-table .usuario-name {
+            font-weight: 600;
+        }
+
+        .saldos-table .saldo-cell {
             text-align: right;
-            font-weight: bold;
-            color: #00ff00;
+            font-weight: 700;
+            color: #27ae60;
+            font-size: 13px;
         }
 
-        .panel-name {
-            font-weight: bold;
+        .saldos-table .total-row {
+            background: linear-gradient(135deg, #36b8c5 0%, #2c9cae 100%);
+            color: white;
+            font-weight: 700;
+            font-size: 13px;
         }
 
-        .usuario-name {
-            font-weight: bold;
-        }
-
-        .total-row {
-            background: #f0f0f0;
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .total-row td:last-child {
-            background: #36b8c5;
+        .saldos-table .total-row td {
+            padding: 12px 10px;
             color: #FFFF00;
-            font-size: 18px;
+            font-weight: 700;
         }
 
-        .total-row {
-            background: #36b8c5 !important;
-            color: #FFFF00 !important;
-        }
-
-        /* ALERTAS Y ESTADOS */
-        .alerta-rojo {
-            background: #ff0000 !important;
+        .saldos-table .alerta-rojo {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
             color: white !important;
+            font-weight: 700 !important;
+        }
+
+        .saldos-table .alerta-rojo td {
+            color: white !important;
+            font-weight: 700 !important;
         }
 
         .estado-activo {
-            color: #4CAF50;
-            font-weight: bold;
+            color: #27ae60;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 9px;
+            background: #d5f4e6;
+            padding: 3px 6px;
+            border-radius: 3px;
+            letter-spacing: 0.2px;
+            display: inline-block;
         }
 
         .estado-pausado {
-            color: #FF9800;
-            font-weight: bold;
+            color: #e67e22;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 9px;
+            background: #fdebd0;
+            padding: 3px 6px;
+            border-radius: 3px;
+            letter-spacing: 0.2px;
+            display: inline-block;
         }
 
         .timestamp-box {
-            background: #f0f0f0;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 15px;
+            background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
             font-size: 12px;
-            color: #666;
-        }
-
-        .refresh-btn {
-            background: #00ff00;
-            color: black;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-
-        .refresh-btn:hover {
-            background: #00cc00;
-        }
-
-        .refresh-btn:active {
-            transform: scale(0.98);
+            color: #2c3e50;
+            border-left: 4px solid #27ae60;
+            font-weight: 600;
         }
 
         /* RESPONSIVE */
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
             .panel-section {
                 grid-template-columns: 1fr;
             }
+        }
 
+        @media (max-width: 768px) {
             .header {
                 flex-direction: column;
-                gap: 10px;
+                gap: 15px;
                 align-items: flex-start;
             }
 
-            .saldos-table {
-                font-size: 12px;
+            .header h1 {
+                font-size: 24px;
             }
 
-            .saldos-table th,
-            .saldos-table td {
-                padding: 8px;
+            .header-controls {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .section {
+                padding: 20px;
             }
 
             .campaign-bar {
@@ -319,24 +502,77 @@
             }
 
             .campaign-bar-stats {
-                flex-direction: column;
+                flex-wrap: wrap;
                 width: 100%;
-                gap: 5px;
+                gap: 12px;
+            }
+
+            .campaign-stat-item {
+                flex: 1;
+                min-width: 80px;
+            }
+
+            .saldos-table {
+                font-size: 12px;
+            }
+
+            .saldos-table th,
+            .saldos-table td {
+                padding: 12px;
             }
         }
 
         .loading {
             text-align: center;
-            padding: 40px;
-            color: #666;
+            padding: 30px;
+            color: #7f8c8d;
+            font-size: 14px;
         }
 
         .error {
-            background: #ffcccc;
-            color: #cc0000;
-            padding: 15px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 12px 14px;
             border-radius: 6px;
-            margin: 20px 0;
+            margin: 10px 0;
+            font-weight: 600;
+            font-size: 12px;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+        }
+
+        .error ul {
+            margin-top: 8px;
+            margin-left: 16px;
+            font-size: 11px;
+        }
+
+        .error li {
+            margin: 3px 0;
+        }
+
+        .success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            font-size: 12px;
+            display: none;
+        }
+
+        .success.show {
+            display: block;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .header-controls,
+            .btn {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -344,14 +580,16 @@
     <div class="container">
         <div class="header">
             <div>
-                <h1>📊 Informe Turno Mañana</h1>
+                <h1>📊 Informe Campañas Meta Ads</h1>
             </div>
-            <div style="display: flex; align-items: center;">
+            <div class="header-controls">
                 <div class="timestamp" id="timestamp">Cargando...</div>
-                <button class="refresh-btn" id="refreshBtn" onclick="cargarDatos()">🔄 Actualizar</button>
+                <button class="btn btn-refresh" id="refreshBtn" onclick="cargarDatos()">🔄 Actualizar</button>
+                <button class="btn btn-export" id="exportBtn" onclick="exportarPNG()">📥 Descargar PNG</button>
             </div>
         </div>
 
+        <div id="successMsg" class="success"></div>
         <div id="timestampBox" class="timestamp-box" style="display: none;"></div>
 
         <div id="content">
@@ -363,7 +601,7 @@
         const CONFIG = {
             ENDPOINT: "https://accountant-services.co.uk/root/superbot1.0",
             API_KEY: "clave-super-secreta",
-            REFRESH_INTERVAL: 60000 // 60 segundos
+            REFRESH_INTERVAL: 60000
         };
 
         let datosGlobales = {};
@@ -372,9 +610,6 @@
 
         // ========== FUNCIONES AUXILIARES ==========
 
-        /**
-         * Formatear valor a moneda ARS
-         */
         function formatearMoneda(valor) {
             return new Intl.NumberFormat('es-AR', {
                 style: 'currency',
@@ -384,9 +619,6 @@
             }).format(valor);
         }
 
-        /**
-         * Normalizar nombre: trim, lowercase, capitalize
-         */
         function normalizarNombre(nombre) {
             if (!nombre) return '';
             return nombre
@@ -395,9 +627,6 @@
                 .charAt(0).toUpperCase() + nombre.slice(1);
         }
 
-        /**
-         * Validar estructura completa de datos VPS
-         */
         function validarDatosVPS(data) {
             if (!data.success) {
                 throw new Error("❌ Respuesta con success = false");
@@ -414,9 +643,6 @@
             return true;
         }
 
-        /**
-         * Obtener saldos restantes por usuario (como en AppScript)
-         */
         function obtenerSaldosRestantes(campaniasMetaAds) {
             const saldosRestantes = {};
             const usuarios = campaniasMetaAds.datos || [];
@@ -429,7 +655,6 @@
                     usuario.cuentas.forEach(cuenta => {
                         const spendCap = parseFloat(cuenta.saldos?.spend_cap) || 0;
                         const amountSpent = parseFloat(cuenta.saldos?.amount_spent) || 0;
-                        // Convertir de centavos a pesos
                         saldosRestantes[nombreDueño] += (spendCap - amountSpent) / 100;
                     });
                 }
@@ -438,9 +663,6 @@
             return saldosRestantes;
         }
 
-        /**
-         * Cargar datos SOLO desde VPS (sin fallback a local)
-         */
         async function cargarDatos() {
             const contentDiv = document.getElementById('content');
             const refreshBtn = document.getElementById('refreshBtn');
@@ -450,7 +672,6 @@
             try {
                 contentDiv.innerHTML = '<div class="loading">⏳ Conectando con servidor...</div>';
                 
-                // Fetch SOLO desde VPS - SIN FALLBACK
                 let datos = await fetchDesdeVPS();
                 
                 datosGlobales = datos;
@@ -458,36 +679,29 @@
                 
                 renderizarDashboard();
                 mostrarUltimaActualizacion();
-                
-                // Reiniciar auto-refresh
                 iniciarAutoRefresh();
                 
             } catch (error) {
                 console.error('Error:', error);
                 
-                // ERROR CRÍTICO - NO hay fallback
                 contentDiv.innerHTML = 
-                    `<div class="error" style="background: #ffcccc; color: #cc0000; padding: 20px; border-radius: 6px; margin: 20px;">
+                    `<div class="error">
                         <strong>❌ ERROR DE CONEXIÓN CON EL SERVIDOR</strong><br><br>
                         <strong>Endpoint:</strong> ${CONFIG.ENDPOINT}<br>
                         <strong>Motivo:</strong> ${error.message}<br><br>
-                        <small>Asegúrate de que:</small>
+                        <small>Verifica:</small>
                         <ul>
-                            <li>El servidor VPS esté disponible</li>
-                            <li>La URL sea correcta</li>
-                            <li>La API key sea válida</li>
-                            <li>No haya problemas de red</li>
+                            <li>Que el servidor VPS esté disponible</li>
+                            <li>La URL del endpoint</li>
+                            <li>La conectividad de red</li>
                         </ul>
-                        <button class="refresh-btn" onclick="cargarDatos()" style="margin-top: 15px;">🔄 Reintentar</button>
+                        <button class="btn btn-refresh" onclick="cargarDatos()" style="margin-top: 15px;">🔄 Reintentar</button>
                     </div>`;
             } finally {
                 if (refreshBtn) refreshBtn.disabled = false;
             }
         }
 
-        /**
-         * Realizar fetch real desde VPS
-         */
         async function fetchDesdeVPS() {
             const options = {
                 method: 'GET',
@@ -499,9 +713,7 @@
             const response = await fetch(CONFIG.ENDPOINT, options);
             
             if (!response.ok) {
-                throw new Error(
-                    `HTTP ${response.status}: ${response.statusText}`
-                );
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
             const datos = await response.json();
@@ -510,9 +722,6 @@
             return datos;
         }
 
-        /**
-         * Mostrar última actualización
-         */
         function mostrarUltimaActualizacion() {
             const box = document.getElementById('timestampBox');
             if (!box) return;
@@ -530,9 +739,6 @@
             box.style.display = 'block';
         }
 
-        /**
-         * Iniciar auto-refresh cada X segundos
-         */
         function iniciarAutoRefresh() {
             if (autoRefreshId) clearInterval(autoRefreshId);
             
@@ -542,28 +748,18 @@
             }, CONFIG.REFRESH_INTERVAL);
         }
 
-        /**
-         * Renderizar dashboard completo
-         */
         function renderizarDashboard() {
             const timestamp = datosGlobales.horariosMetaAds?.inicio || 
                             new Date().toLocaleString('es-AR');
             document.getElementById('timestamp').textContent = `Fecha: ${timestamp}`;
 
             let html = '';
-
-            // SECCIÓN 1: INFORME DE PANELES
             html += renderizarInformePaneles();
-
-            // SECCIÓN 2: TABLA DE SALDOS
             html += renderizarTablaSaldos();
 
             document.getElementById('content').innerHTML = html;
         }
 
-        /**
-         * Renderizar sección de paneles
-         */
         function renderizarInformePaneles() {
             if (!datosGlobales.reportePaneles || datosGlobales.reportePaneles.length === 0) {
                 return '<div class="section"><p class="error">❌ No hay datos de paneles disponibles</p></div>';
@@ -573,10 +769,12 @@
             html += '<div class="section-title">📋 Informe de Paneles</div>';
             html += '<div class="panels-container">';
 
-            const campaniasPorPanel = agruparCampaniasPorPanel();
+            const { campanas: campaniasPorPanel, usuarios: usuariosPanel } = agruparCampaniasPorPanelConUsuario();
 
             datosGlobales.reportePaneles.forEach(panel => {
-                html += generarSeccionPanel(panel, campaniasPorPanel[panel.panel] || []);
+                const campanias = campaniasPorPanel[panel.panel] || [];
+                const usuarioPanel = usuariosPanel[panel.panel] || 'N/A';
+                html += generarSeccionPanel(panel, campanias, usuarioPanel);
             });
 
             html += '</div></div>';
@@ -584,64 +782,116 @@
         }
 
         /**
-         * Agrupar campañas por panel
+         * Enriquecer campañas con datos de reportePaneles
          */
-        function agruparCampaniasPorPanel() {
+        function agruparCampaniasPorPanelConUsuario() {
             const mapeo = {};
+            const usuariosPanel = {};
             const campaniasMetaAds = datosGlobales.campaniasMetaAds?.datos || [];
 
+            // Para cada usuario (cuenta de Meta Ads)
             campaniasMetaAds.forEach(usuario => {
+                const nombreUsuario = usuario.nombre;
+                
+                // Para cada cuenta del usuario
                 usuario.cuentas?.forEach(cuenta => {
+                    // Para cada campaña en la cuenta
                     cuenta.campanias?.forEach(campania => {
+                        let campaniaEncontrada = false;
+                        
+                        // Buscar a qué panel pertenece esta campaña
                         datosGlobales.reportePaneles?.forEach(panel => {
-                            if (campania.nombre.toLowerCase().includes(panel.panel.toLowerCase()) ||
-                                campania.nombre.toLowerCase().includes(usuario.nombre.toLowerCase())) {
-                                if (!mapeo[panel.panel]) mapeo[panel.panel] = [];
-                                mapeo[panel.panel].push({ ...campania, usuario: usuario.nombre });
+                            const panelName = panel.panel.toLowerCase().trim();
+                            const campaniaName = campania.nombre.toLowerCase().trim();
+                            const userName = nombreUsuario.toLowerCase().trim();
+                            
+                            // Mapeos válidos: 
+                            // 1. Nombre de panel está en nombre de campaña (PRIORITARIO)
+                            // 2. Nombre de usuario está en nombre de campaña  
+                            
+                            const matchPanel = campaniaName.includes(panelName);
+                            const matchUser = campaniaName.includes(userName);
+                            
+                            if (matchPanel || matchUser) {
+                                campaniaEncontrada = true;
+                                
+                                if (!mapeo[panel.panel]) {
+                                    mapeo[panel.panel] = [];
+                                    usuariosPanel[panel.panel] = nombreUsuario;
+                                }
+                                
+                                // Buscar datos de cargas en reportePaneles
+                                // Estrategia: Extraer la letra del patrón "Panel-LETRA-Nombre"
+                                let clyParaCampania = 0;  // CLV/Clientify = reportePaneles.campañas[LETRA].mensajes
+                                
+                                // Regex: buscar patrón "algo-X-algo" donde X es una letra
+                                const letraMatch = campaniaName.match(/-([a-z])-/i);
+                                if (letraMatch && letraMatch[1]) {
+                                    const letraBuscada = letraMatch[1].toUpperCase();
+                                    
+                                    // Buscar exactamente esa letra en reportePaneles.campañas
+                                    if (panel.campañas && panel.campañas[letraBuscada]) {
+                                        const datosLetra = panel.campañas[letraBuscada];
+                                        clyParaCampania = datosLetra.mensajes || 0;  // CLV = mensajes del panel
+                                    }
+                                }
+                                
+                                mapeo[panel.panel].push({
+                                    ...campania,
+                                    usuario: nombreUsuario,
+                                    cly_para_campania: clyParaCampania
+                                });
                             }
                         });
+                        
+                        // Si no se encontró en ningún panel y tiene gasto, registrar
+                        if (!campaniaEncontrada && (campania.metricas_diarias?.spend || 0) > 0) {
+                            console.warn(`⚠️ Campaña sin panel asignado: ${campania.nombre}`);
+                        }
                     });
                 });
             });
 
-            return mapeo;
+            return { campanas: mapeo, usuarios: usuariosPanel };
         }
 
-        /**
-         * Generar sección de un panel
-         */
-        function generarSeccionPanel(panel, campanias) {
-            const usuariosPanel = datosGlobales.campaniasMetaAds?.datos?.map(u => u.nombre) || [];
-            
+        function generarSeccionPanel(panel, campanias, usuarioPanel) {
             let html = '<div class="panel-section">';
             
             html += '<div class="panel-info">';
             html += `<div class="panel-info-header">▶ ${panel.panel.toUpperCase()} CODIGO: ${panel.id}</div>`;
             html += `<div class="panel-info-row">
                 <span class="panel-info-label">FB</span>
-                <span class="panel-info-value">${usuariosPanel.find(u => panel.panel.toLowerCase().includes(u.toLowerCase())) || 'N/A'}</span>
+                <span class="panel-info-value">${usuarioPanel}</span>
             </div>`;
             html += `<div class="panel-info-row">
-                <span class="panel-info-label">Total</span>
+                <span class="panel-info-label">Ads</span>
                 <span class="panel-info-value">${panel.total_mensajes_hoy}/500</span>
             </div>`;
             html += `<div class="panel-info-row">
-                <span class="panel-info-label">Total Clientify</span>
-                <span class="panel-info-value">${panel.cargas_hoy}/500</span>
+                <span class="panel-info-label">Cargas</span>
+                <span class="panel-info-value">${panel.cargas_hoy}</span>
             </div>`;
             html += '</div>';
 
             html += '<div>';
-            if (campanias.length > 0) {
+            // Filtrar campañas: solo con gasto > 0 Y que estén mapeadas a un panel
+            const campaniasFiltradas = campanias.filter(c => {
+                const gasto = parseFloat(c.metricas_diarias?.spend || 0);
+                // Validar que la campaña esté mapeada (tiene usuario)
+                return gasto > 0 && c.usuario;
+            });
+            
+            if (campaniasFiltradas.length > 0) {
                 html += '<div class="campaigns-list">';
-                campanias.forEach(campania => {
+                campaniasFiltradas.forEach(campania => {
                     html += generarBarraCampania(campania);
                 });
                 html += '</div>';
-                html += `<div class="totales-cargas">Totales cargas ${panel.cargas_hoy}</div>`;
+                html += `<div class="totales-cargas">Total ADS: ${panel.total_mensajes_hoy}</div>`;
             } else {
-                html += '<div style="padding: 10px; color: #999;">Sin campañas Meta Ads</div>';
-                html += `<div class="totales-cargas">Totales cargas ${panel.cargas_hoy}</div>`;
+                html += '<div style="padding: 16px; color: #999; font-size: 15px;">Sin campañas con gasto</div>';
+                html += `<div class="totales-cargas">Total ADS: ${panel.total_mensajes_hoy}</div>`;
             }
             html += '</div>';
 
@@ -650,7 +900,49 @@
         }
 
         /**
-         * Generar barra de campaña
+         * Obtener clase de fondo suave para campaña basada en rango
+         * Verde: < $0.50
+         * Amarillo: $0.50 - $0.99
+         * Naranja: $1.00 - $1.49
+         * Rojo: >= $1.50
+         */
+        function getBackgroundClassForPrice(precio) {
+            const precioNum = parseFloat(precio || 0);
+            
+            if (precioNum < 0.50) {
+                return 'campania-fondo-verde';
+            } else if (precioNum < 1.00) {
+                return 'campania-fondo-amarillo';
+            } else if (precioNum < 1.50) {
+                return 'campania-fondo-naranja';
+            } else {
+                return 'campania-fondo-rojo';
+            }
+        }
+
+        /**
+         * Obtener clase CSS para precio CPM basada en rango
+         * Verde: < $0.50
+         * Amarillo: $0.50 - $0.99
+         * Naranja: $1.00 - $1.49
+         * Rojo: >= $1.50
+         */
+        function getColorClassForPrice(precio) {
+            const precioNum = parseFloat(precio || 0);
+            
+            if (precioNum < 0.50) {
+                return 'precio-verde';
+            } else if (precioNum < 1.00) {
+                return 'precio-amarillo';
+            } else if (precioNum < 1.50) {
+                return 'precio-naranja';
+            } else {
+                return 'precio-rojo';
+            }
+        }
+
+        /**
+         * Generar barra de campaña con datos correctos
          */
         function generarBarraCampania(campania) {
             const metricas = campania.metricas_diarias || {};
@@ -658,13 +950,17 @@
             const gasto = (metricas.spend || 0).toFixed(2);
             const costoPorMensaje = parseFloat(metricas.costoPorMensaje || 0);
             const costoPorMensajeStr = costoPorMensaje.toFixed(2);
-            const mensajes = metricas.messages || 0;
+            
+            // ADS = metricas_diarias.messages (de Meta Ads)
+            const ads = metricas.messages || 0;
+            // CLV = reportePaneles.campañas[LETRA].mensajes
+            const clv = campania.cly_para_campania || 0;
 
-            // Detectar si costoPorMensaje > 1.00 para pintar de amarillo
-            const esAlertaPrecio = costoPorMensaje > 1.00;
+            const colorClass = getColorClassForPrice(costoPorMensaje);
+            const bgClass = getBackgroundClassForPrice(costoPorMensaje);
 
             return `
-                <div class="campaign-bar">
+                <div class="campaign-bar ${bgClass}">
                     <span class="campaign-bar-name">${campania.nombre}</span>
                     <div class="campaign-bar-stats">
                         <div class="campaign-stat-item">
@@ -673,18 +969,18 @@
                         </div>
                         <div class="campaign-stat-item">
                             <span class="campaign-stat-label">Ads</span>
-                            <span class="campaign-stat-value">${mensajes}</span>
+                            <span class="campaign-stat-value">${ads}</span>
                         </div>
                         <div class="campaign-stat-item">
                             <span class="campaign-stat-label">Clv</span>
-                            <span class="campaign-stat-value">${mensajes}</span>
+                            <span class="campaign-stat-value">${clv}</span>
                         </div>
-                        <div class="campaign-stat-item ${esAlertaPrecio ? 'alerta-precio' : ''}">
+                        <div class="campaign-stat-item ${colorClass}">
                             <span class="campaign-stat-label">$</span>
                             <span class="campaign-stat-value">$${costoPorMensajeStr}</span>
                         </div>
                         <div class="campaign-stat-item">
-                            <span class="campaign-stat-label"></span>
+                            <span class="campaign-stat-label">Estado</span>
                             <span class="campaign-stat-value ${estado === 'Activa' ? 'estado-activo' : 'estado-pausado'}">${estado}</span>
                         </div>
                     </div>
@@ -692,16 +988,12 @@
             `;
         }
 
-        /**
-         * Renderizar tabla de saldos
-         */
         function renderizarTablaSaldos() {
             if (!datosGlobales.campaniasMetaAds || !datosGlobales.campaniasMetaAds.datos) {
                 return '';
             }
 
             const usuarios = datosGlobales.campaniasMetaAds.datos || [];
-            const saldosRestantes = obtenerSaldosRestantes(datosGlobales.campaniasMetaAds);
 
             let htmlTabla = '<div class="section saldos-section">';
             htmlTabla += '<div class="section-title">💰 Saldos Consolidados</div>';
@@ -728,7 +1020,6 @@
                 usuario.cuentas.forEach(cuenta => {
                     const nombreNormalizado = normalizarNombre(usuario.nombre);
                     
-                    // Evitar duplicados
                     if (yaImpresos[nombreNormalizado]) return;
 
                     const saldosInfo = cuenta.saldos || {};
@@ -738,17 +1029,18 @@
                     
                     totalSaldo += balance;
 
-                    // Buscar panel asociado
-                    const panelAsociado = datosGlobales.reportePaneles.find(p => 
-                        p.panel.toLowerCase().includes(nombreNormalizado.toLowerCase()) ||
-                        nombreNormalizado.toLowerCase().includes(p.panel.toLowerCase())
-                    );
+                    // Buscar panel asociado al usuario
+                    const panelAsociado = datosGlobales.reportePaneles.find(p => {
+                        const pName = normalizarNombre(p.panel);
+                        const uName = nombreNormalizado;
+                        return pName === uName || p.panel.toLowerCase().includes(uName.toLowerCase());
+                    });
 
+                    // Usar nombre del panel si existe, sino usar usuario
                     const panelNombre = panelAsociado?.panel || usuario.nombre;
                     const mensajesDiarios = panelAsociado?.total_mensajes_hoy || '-';
                     const beneficio = panelAsociado?.cargas_hoy || '-';
 
-                    // Detectar alerta si gasto > límite
                     let claseAlerta = '';
                     if (amount_spent > spend_cap) {
                         claseAlerta = ' alerta-rojo';
@@ -760,9 +1052,7 @@
                             <td>${mensajesDiarios}</td>
                             <td>${beneficio}</td>
                             <td class="usuario-name">${usuario.nombre}</td>
-                            <td style="text-align: right; font-weight: bold; color: #00ff00;">
-                                ${formatearMoneda(balance)}
-                            </td>
+                            <td class="saldo-cell">${formatearMoneda(balance)}</td>
                         </tr>
                     `;
 
@@ -772,7 +1062,7 @@
 
             htmlTabla += `
                 <tr class="total-row">
-                    <td colspan="4">TOTAL</td>
+                    <td colspan="4">TOTAL SALDO</td>
                     <td>${formatearMoneda(totalSaldo)}</td>
                 </tr>
             `;
@@ -785,12 +1075,46 @@
             return htmlTabla;
         }
 
-        // Iniciar al cargar la página
+        async function exportarPNG() {
+            const exportBtn = document.getElementById('exportBtn');
+            exportBtn.disabled = true;
+            exportBtn.textContent = '📥 Generando...';
+
+            try {
+                const element = document.getElementById('content');
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
+
+                const link = document.createElement('a');
+                const fecha = new Date().toLocaleString('es-AR').replace(/[/:,]/g, '-');
+                link.href = canvas.toDataURL('image/png');
+                link.download = `informe-campanas-${fecha}.png`;
+                link.click();
+
+                const successMsg = document.getElementById('successMsg');
+                successMsg.textContent = '✅ Informe descargado correctamente';
+                successMsg.classList.add('show');
+
+                setTimeout(() => {
+                    successMsg.classList.remove('show');
+                }, 3000);
+
+            } catch (error) {
+                console.error('Error al exportar:', error);
+                alert('❌ Error al descargar el informe');
+            } finally {
+                exportBtn.disabled = false;
+                exportBtn.textContent = '📥 Descargar PNG';
+            }
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             cargarDatos();
         });
 
-        // Limpiar interval al cerrar
         window.addEventListener('beforeunload', () => {
             if (autoRefreshId) clearInterval(autoRefreshId);
         });
