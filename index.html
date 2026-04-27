@@ -356,6 +356,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 12px;
+            table-layout: fixed;
         }
 
         .saldos-table thead {
@@ -371,6 +372,16 @@
             text-transform: uppercase;
             letter-spacing: 0.3px;
             border-bottom: 2px solid #27ae60;
+        }
+
+        .saldos-table thead th:first-child {
+            width: 60%;
+        }
+
+        .saldos-table thead th:last-child {
+            width: 40%;
+            text-align: right;
+            padding-right: 20px;
         }
 
         .saldos-table tbody tr {
@@ -396,6 +407,7 @@
 
         .saldos-table .usuario-name {
             font-weight: 600;
+            width: 60%;
         }
 
         .saldos-table .saldo-cell {
@@ -403,6 +415,8 @@
             font-weight: 700;
             color: #27ae60;
             font-size: 13px;
+            padding-right: 20px;
+            width: 40%;
         }
 
         .saldos-table .total-row {
@@ -416,6 +430,16 @@
             padding: 12px 10px;
             color: #FFFF00;
             font-weight: 700;
+        }
+
+        .saldos-table .total-row td:first-child {
+            width: 60%;
+        }
+
+        .saldos-table .total-row td:last-child {
+            text-align: right;
+            padding-right: 20px;
+            width: 40%;
         }
 
         .saldos-table .alerta-rojo {
@@ -822,7 +846,8 @@
                                 
                                 // Buscar datos de cargas en reportePaneles
                                 // Estrategia: Extraer la letra del patrón "Panel-LETRA-Nombre"
-                                let clyParaCampania = 0;  // CLV/Clientify = reportePaneles.campañas[LETRA].mensajes
+                                let clyParaCampania = 0;  // CLY/Clientify = reportePaneles.campañas[LETRA].mensajes
+                                let cargasParaCampania = 0;  // Cargas del panel para esta campaña
                                 
                                 // Regex: buscar patrón "algo-X-algo" donde X es una letra
                                 const letraMatch = campaniaName.match(/-([a-z])-/i);
@@ -832,14 +857,16 @@
                                     // Buscar exactamente esa letra en reportePaneles.campañas
                                     if (panel.campañas && panel.campañas[letraBuscada]) {
                                         const datosLetra = panel.campañas[letraBuscada];
-                                        clyParaCampania = datosLetra.mensajes || 0;  // CLV = mensajes del panel
+                                        clyParaCampania = datosLetra.mensajes || 0;  // CLY = mensajes del panel
+                                        cargasParaCampania = datosLetra.cargas || 0;  // Cargas = cargas del panel
                                     }
                                 }
                                 
                                 mapeo[panel.panel].push({
                                     ...campania,
                                     usuario: nombreUsuario,
-                                    cly_para_campania: clyParaCampania
+                                    cly_para_campania: clyParaCampania,
+                                    cargas_para_campania: cargasParaCampania
                                 });
                             }
                         });
@@ -865,7 +892,7 @@
                 <span class="panel-info-value">${usuarioPanel}</span>
             </div>`;
             html += `<div class="panel-info-row">
-                <span class="panel-info-label">Ads</span>
+                <span class="panel-info-label">Objetivo</span>
                 <span class="panel-info-value">${panel.total_mensajes_hoy}/500</span>
             </div>`;
             html += `<div class="panel-info-row">
@@ -884,14 +911,22 @@
             
             if (campaniasFiltradas.length > 0) {
                 html += '<div class="campaigns-list">';
+                
+                // Calcular totales SOLO de campañas filtradas
+                let totalAds = 0;
+                let totalClv = 0;
+                
                 campaniasFiltradas.forEach(campania => {
                     html += generarBarraCampania(campania);
+                    totalAds += campania.metricas_diarias?.messages || 0;
+                    totalClv += campania.cly_para_campania || 0;
                 });
+                
                 html += '</div>';
-                html += `<div class="totales-cargas">Total ADS: ${panel.total_mensajes_hoy}</div>`;
+                html += `<div class="totales-cargas">Total CLY: ${totalClv}</div>`;
             } else {
                 html += '<div style="padding: 16px; color: #999; font-size: 15px;">Sin campañas con gasto</div>';
-                html += `<div class="totales-cargas">Total ADS: ${panel.total_mensajes_hoy}</div>`;
+                html += `<div class="totales-cargas">Total CLY: 0</div>`;
             }
             html += '</div>';
 
@@ -947,14 +982,19 @@
         function generarBarraCampania(campania) {
             const metricas = campania.metricas_diarias || {};
             const estado = campania.estado === 'ACTIVE' ? 'Activa' : 'Pausada';
-            const gasto = (metricas.spend || 0).toFixed(2);
-            const costoPorMensaje = parseFloat(metricas.costoPorMensaje || 0);
-            const costoPorMensajeStr = costoPorMensaje.toFixed(2);
+            const gasto = parseFloat(metricas.spend || 0);
+            const gastoStr = gasto.toFixed(2);
             
             // ADS = metricas_diarias.messages (de Meta Ads)
             const ads = metricas.messages || 0;
-            // CLV = reportePaneles.campañas[LETRA].mensajes
+            // CLY = reportePaneles.campañas[LETRA].mensajes
             const clv = campania.cly_para_campania || 0;
+            // Cargas = reportePaneles.campañas[LETRA].cargas
+            const cargas = campania.cargas_para_campania || 0;
+            
+            // Costo por mensaje = gasto / CLY (NO sobre Ads)
+            const costoPorMensaje = clv > 0 ? gasto / clv : 0;
+            const costoPorMensajeStr = costoPorMensaje.toFixed(2);
 
             const colorClass = getColorClassForPrice(costoPorMensaje);
             const bgClass = getBackgroundClassForPrice(costoPorMensaje);
@@ -965,19 +1005,23 @@
                     <div class="campaign-bar-stats">
                         <div class="campaign-stat-item">
                             <span class="campaign-stat-label">Gasto</span>
-                            <span class="campaign-stat-value">$${gasto}</span>
+                            <span class="campaign-stat-value">$${gastoStr}</span>
                         </div>
                         <div class="campaign-stat-item">
                             <span class="campaign-stat-label">Ads</span>
                             <span class="campaign-stat-value">${ads}</span>
                         </div>
                         <div class="campaign-stat-item">
-                            <span class="campaign-stat-label">Clv</span>
+                            <span class="campaign-stat-label">CLY</span>
                             <span class="campaign-stat-value">${clv}</span>
                         </div>
                         <div class="campaign-stat-item ${colorClass}">
                             <span class="campaign-stat-label">$</span>
                             <span class="campaign-stat-value">$${costoPorMensajeStr}</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-label">Cargas</span>
+                            <span class="campaign-stat-value">${cargas}</span>
                         </div>
                         <div class="campaign-stat-item">
                             <span class="campaign-stat-label">Estado</span>
@@ -989,22 +1033,35 @@
         }
 
         function renderizarTablaSaldos() {
-            if (!datosGlobales.campaniasMetaAds || !datosGlobales.campaniasMetaAds.datos) {
+            if (!datosGlobales.reportePaneles || !datosGlobales.campaniasMetaAds?.datos) {
                 return '';
             }
 
-            const usuarios = datosGlobales.campaniasMetaAds.datos || [];
+            // Obtener mapeo de usuarios por panel
+            const { usuarios: usuariosPanel } = agruparCampaniasPorPanelConUsuario();
+            
+            // Crear mapa de saldos por usuario
+            // Saldo real = spend_cap - amount_spent (convertido de centavos)
+            const saldosMap = {};
+            datosGlobales.campaniasMetaAds.datos.forEach(usuario => {
+                const nombreNorm = normalizarNombre(usuario.nombre);
+                saldosMap[nombreNorm] = 0;
+                
+                usuario.cuentas?.forEach(cuenta => {
+                    const spendCap = parseFloat(cuenta.saldos?.spend_cap) || 0;
+                    const amountSpent = parseFloat(cuenta.saldos?.amount_spent) || 0;
+                    const saldoReal = (spendCap - amountSpent) / 100;
+                    saldosMap[nombreNorm] += saldoReal;
+                });
+            });
 
             let htmlTabla = '<div class="section saldos-section">';
-            htmlTabla += '<div class="section-title">💰 Saldos Consolidados</div>';
+            htmlTabla += '<div class="section-title">💰 FB - ZOCKET Saldos actuales</div>';
             htmlTabla += '<table class="saldos-table">';
             htmlTabla += `
                 <thead>
                     <tr>
-                        <th>Panel</th>
-                        <th>MSJ Diarios</th>
-                        <th>Beneficio</th>
-                        <th>Usuario (FB/Meta)</th>
+                        <th>Usuario</th>
                         <th>Saldo Actual</th>
                     </tr>
                 </thead>
@@ -1012,57 +1069,25 @@
             `;
 
             let totalSaldo = 0;
-            const yaImpresos = {};
 
-            usuarios.forEach(usuario => {
-                if (!usuario.cuentas) return;
+            // ITERAR POR USUARIOS (no por paneles) - incluye todos: con campañas y sin campañas
+            datosGlobales.campaniasMetaAds.datos.forEach(usuario => {
+                const nombreNorm = normalizarNombre(usuario.nombre);
+                const saldo = saldosMap[nombreNorm] || 0;
+                
+                totalSaldo += saldo;
 
-                usuario.cuentas.forEach(cuenta => {
-                    const nombreNormalizado = normalizarNombre(usuario.nombre);
-                    
-                    if (yaImpresos[nombreNormalizado]) return;
-
-                    const saldosInfo = cuenta.saldos || {};
-                    const balance = (parseFloat(saldosInfo.balance) || 0) / 100;
-                    const spend_cap = (parseFloat(saldosInfo.spend_cap) || 0) / 100;
-                    const amount_spent = (parseFloat(saldosInfo.amount_spent) || 0) / 100;
-                    
-                    totalSaldo += balance;
-
-                    // Buscar panel asociado al usuario
-                    const panelAsociado = datosGlobales.reportePaneles.find(p => {
-                        const pName = normalizarNombre(p.panel);
-                        const uName = nombreNormalizado;
-                        return pName === uName || p.panel.toLowerCase().includes(uName.toLowerCase());
-                    });
-
-                    // Usar nombre del panel si existe, sino usar usuario
-                    const panelNombre = panelAsociado?.panel || usuario.nombre;
-                    const mensajesDiarios = panelAsociado?.total_mensajes_hoy || '-';
-                    const beneficio = panelAsociado?.cargas_hoy || '-';
-
-                    let claseAlerta = '';
-                    if (amount_spent > spend_cap) {
-                        claseAlerta = ' alerta-rojo';
-                    }
-
-                    htmlTabla += `
-                        <tr${claseAlerta ? ` class="${claseAlerta}"` : ''}>
-                            <td class="panel-name">${panelNombre}</td>
-                            <td>${mensajesDiarios}</td>
-                            <td>${beneficio}</td>
-                            <td class="usuario-name">${usuario.nombre}</td>
-                            <td class="saldo-cell">${formatearMoneda(balance)}</td>
-                        </tr>
-                    `;
-
-                    yaImpresos[nombreNormalizado] = true;
-                });
+                htmlTabla += `
+                    <tr>
+                        <td class="usuario-name"><strong>${usuario.nombre}</strong></td>
+                        <td class="saldo-cell">${formatearMoneda(saldo)}</td>
+                    </tr>
+                `;
             });
 
             htmlTabla += `
                 <tr class="total-row">
-                    <td colspan="4">TOTAL SALDO</td>
+                    <td>TOTAL SALDO</td>
                     <td>${formatearMoneda(totalSaldo)}</td>
                 </tr>
             `;
