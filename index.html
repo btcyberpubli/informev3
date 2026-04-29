@@ -256,6 +256,17 @@
             color: var(--text-primary);
         }
 
+        body.dark-mode .campaign-bar.campaign-bar-paused {
+            background: #4a4a4a !important;
+            border-color: #555 !important;
+        }
+
+        body.dark-mode .campaign-bar.campaign-bar-paused .campaign-bar-name,
+        body.dark-mode .campaign-bar.campaign-bar-paused .campaign-stat-label,
+        body.dark-mode .campaign-bar.campaign-bar-paused .campaign-stat-value {
+            color: #d0d0d0 !important;
+        }
+
         body.dark-mode .campaign-stat-item.asignar-input {
             background: rgba(100, 150, 200, 0.15);
             border: 1px solid rgba(100, 150, 200, 0.3);
@@ -454,6 +465,18 @@
 
         .campaign-bar:hover {
             box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        /* CAMPAÑA PAUSADA - ESTILO GRIS */
+        .campaign-bar.campaign-bar-paused {
+            background: #e8e8e8 !important;
+            border-color: #bbb !important;
+        }
+
+        .campaign-bar.campaign-bar-paused .campaign-bar-name,
+        .campaign-bar.campaign-bar-paused .campaign-stat-label,
+        .campaign-bar.campaign-bar-paused .campaign-stat-value {
+            color: #2c3e50 !important;
         }
 
         .campaign-bar-name {
@@ -1619,26 +1642,15 @@
                 });
             });
 
-            // ✅ NUEVO: Botones +/- para sumar/restar el valor ingresado
+            // ✅ NUEVO: Botones +/- para sumar/restar el valor ingresado (SIN GUARDAR AUTOMÁTICAMENTE)
             document.querySelectorAll('.btn-asignar-add').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
                     const input = btn.closest('.asignar-controles').querySelector('.input-asignar-mensaje');
                     if (input) {
-                        const valor = parseInt(input.value) || 0;
-                        // Obtener panel actual
-                        const panelDiv = input.closest('[data-panel-id]');
-                        if (panelDiv) {
-                            const panelId = panelDiv.getAttribute('data-panel-id');
-                            const headerText = panelDiv.querySelector('.panel-info-header')?.textContent || '';
-                            const panelMatch = headerText.match(/▶\s+(\w+)\s+CODIGO/);
-                            const panelName = panelMatch ? panelMatch[1].toLowerCase() : 'unknown';
-                            
-                            // Si valor > 0, guardar
-                            if (valor > 0) {
-                                guardarAsignacionesPanel(panelId, panelName);
-                            }
-                        }
+                        // Solo suma al input, no guarda
+                        input.value = (parseInt(input.value) || 0) + 5;
+                        input.focus();
                     }
                 });
             });
@@ -1648,21 +1660,9 @@
                     e.preventDefault();
                     const input = btn.closest('.asignar-controles').querySelector('.input-asignar-mensaje');
                     if (input) {
-                        const valor = parseInt(input.value) || 0;
-                        // Hacer el valor negativo y guardar
-                        if (valor > 0) {
-                            input.value = -valor;
-                            // Obtener panel actual
-                            const panelDiv = input.closest('[data-panel-id]');
-                            if (panelDiv) {
-                                const panelId = panelDiv.getAttribute('data-panel-id');
-                                const headerText = panelDiv.querySelector('.panel-info-header')?.textContent || '';
-                                const panelMatch = headerText.match(/▶\s+(\w+)\s+CODIGO/);
-                                const panelName = panelMatch ? panelMatch[1].toLowerCase() : 'unknown';
-                                
-                                guardarAsignacionesPanel(panelId, panelName);
-                            }
-                        }
+                        // Solo resta al input, no guarda (mínimo 0)
+                        input.value = Math.max(0, (parseInt(input.value) || 0) - 5);
+                        input.focus();
                     }
                 });
             });
@@ -2152,6 +2152,10 @@
             const colorClass = getColorClassForPrice(costoPorMensaje);
             const bgClass = getBackgroundClassForPrice(costoPorMensaje);
 
+            // ✅ Determinar si está pausada
+            const isPaused = campania.estado !== 'ACTIVE';
+            const pausedClass = isPaused ? 'campaign-bar-paused' : '';
+
             // ✅ Extraer letra de campaña del nombre
             const letraMatch = campania.nombre.match(/-([a-z])-/i);
             const letra = letraMatch ? letraMatch[1].toUpperCase() : 'X';
@@ -2201,7 +2205,7 @@
             }
 
             return `
-                <div class="campaign-bar ${bgClass}">
+                <div class="campaign-bar ${bgClass} ${pausedClass}">
                     <span class="campaign-bar-name">${campania.nombre}</span>
                     <div class="campaign-bar-stats">
                         <div class="campaign-stat-item">
@@ -2403,24 +2407,32 @@
                 }
 
                 // Construir estructura de campañas desde los inputs (MODO ACUMULATIVO)
+                // ⭐ IMPORTANTE: Enviar TODAS las campañas, no solo las que cambiaron
                 const campañas = {};
                 let hayAsignaciones = false;
                 
                 inputs.forEach(input => {
-                    const delta = parseInt(input.value) || 0;  // Delta = cuánto SUMAR
+                    const delta = parseInt(input.value) || 0;  // Delta = cuánto SUMAR/RESTAR
                     const letra = input.getAttribute('data-campania');
                     
-                    if (letra && delta !== 0) {  // Solo si hay algo que sumar/restar
+                    if (letra) {
                         // Obtener cantidad actual del config
                         const cantidadActual = datosGlobales._config?.paneles?.[panelNombre]?.campañas?.[letra]?.cantidad_asignada || 0;
                         const nuevaCantidad = Math.max(0, cantidadActual + delta);  // No permitir negativos
                         
+                        // Incluir TODAS las campañas, aunque no cambien
                         campañas[letra] = {
                             cantidad_asignada: nuevaCantidad,
                             asignacion_automatica: false
                         };
-                        hayAsignaciones = true;
-                        console.log(`📝 ${letra}: ${cantidadActual} + ${delta} = ${nuevaCantidad}`);
+                        
+                        // Solo marcar como cambio si el delta no es 0
+                        if (delta !== 0) {
+                            hayAsignaciones = true;
+                            console.log(`📝 ${letra}: ${cantidadActual} + ${delta} = ${nuevaCantidad}`);
+                        } else {
+                            console.log(`📝 ${letra}: ${cantidadActual} (sin cambios)`);
+                        }
                     }
                 });
 
@@ -2430,9 +2442,9 @@
                     return;
                 }
 
-                console.log(`💾 Guardando asignaciones para ${panelNombre}...`);
+                console.log(`💾 Guardando asignaciones para ${panelNombre}...`, campañas);
 
-                // Enviar al servidor
+                // Enviar al servidor CON TODAS LAS CAMPAÑAS
                 const response = await fetch('https://accountant-services.co.uk/api/panel-asignaciones', {
                     method: 'POST',
                     headers: {
