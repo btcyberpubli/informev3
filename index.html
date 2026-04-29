@@ -382,8 +382,9 @@
         .asignacion-item {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 5px;
-            padding: 3px 5px;
+            padding: 6px 5px;
             font-size: 11px;
             color: #27ae60;
             border-bottom: 1px solid var(--border-color);
@@ -394,11 +395,192 @@
         }
 
         .asignacion-campania {
+            min-width: 45px;
             font-weight: 600;
-            min-width: 35px;
         }
 
-        .asignacion-auto {
+        .asignacion-botones-compactos {
+            display: flex;
+            gap: 3px;
+        }
+
+        .btn-agregar-uno,
+        .btn-restar-uno {
+            padding: 3px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            background: #ecf0f1;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            min-width: 28px;
+            color: #2c3e50;
+        }
+
+        .btn-agregar-uno:hover:not(:disabled) {
+            background: #27ae60;
+            color: white;
+            border-color: #229954;
+        }
+
+        .btn-restar-uno:hover:not(:disabled) {
+            background: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+
+        .btn-agregar-uno:disabled,
+        .btn-restar-uno:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #bdc3c7;
+            color: #7f8c8d;
+        }
+
+        /* Input delta (para sumar varios de una vez) */
+        .asignacion-input-delta {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+            order: -1;  /* Aparece primero */
+        }
+
+        .asignacion-input-delta input {
+            width: 50px;
+            padding: 4px;
+            font-size: 11px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            text-align: center;
+            color: #2c3e50;
+            background: #fff;
+            font-weight: bold;
+        }
+
+        .asignacion-input-delta input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 4px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-input-menos,
+        .btn-input-mas {
+            padding: 3px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            border: 1px solid #3498db;
+            border-radius: 2px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            min-width: 28px;
+            transition: all 0.15s ease;
+        }
+
+        .btn-input-menos:hover,
+        .btn-input-mas:hover {
+            background: #2980b9;
+            border-color: #1f618d;
+        }
+
+        .btn-input-menos:disabled,
+        .btn-input-mas:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #bdc3c7;
+            border-color: #95a5a6;
+        }
+
+        /* Botón guardar todo */
+        .asignaciones-footer {
+            padding: 8px 5px;
+            border-top: 2px solid var(--border-color);
+            display: flex;
+            justify-content: center;
+        }
+
+        .btn-guardar-todo {
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: bold;
+            border: 1px solid #27ae60;
+            border-radius: 4px;
+            background: #27ae60;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-guardar-todo:hover {
+            background: #229954;
+            border-color: #1e8449;
+            box-shadow: 0 2px 6px rgba(39, 174, 96, 0.3);
+        }
+
+        /* Dark mode adjustments */
+        body.dark-mode .asignacion-input-delta input {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        body.dark-mode .btn-input-menos,
+        body.dark-mode .btn-input-mas {
+            background: #3498db;
+            border-color: #2980b9;
+        }
+
+        body.dark-mode .btn-input-menos:hover,
+        body.dark-mode .btn-input-mas:hover {
+            background: #2980b9;
+            border-color: #1f618d;
+        }
+
+        body.dark-mode .btn-input-menos:disabled,
+        body.dark-mode .btn-input-mas:disabled {
+            background: #444;
+            color: #888;
+            opacity: 0.5;
+        }
+
+        body.dark-mode .btn-agregar-uno,
+        body.dark-mode .btn-restar-uno {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        body.dark-mode .btn-agregar-uno:hover:not(:disabled) {
+            background: #229954;
+            color: white;
+            border-color: #1e8449;
+        }
+
+        body.dark-mode .btn-restar-uno:hover:not(:disabled) {
+            background: #c0392b;
+            color: white;
+            border-color: #a93226;
+        }
+
+        body.dark-mode .btn-agregar-uno:disabled,
+        body.dark-mode .btn-restar-uno:disabled {
+            background: #444;
+            color: #888;
+            opacity: 0.5;
+        }
+
+        body.dark-mode .btn-guardar-todo {
+            background: #27ae60;
+            border-color: #229954;
+        }
+
+        body.dark-mode .btn-guardar-todo:hover {
+            background: #229954;
+            border-color: #1e8449;
+        }
+
+        body.dark-mode .asignacion-auto {
             display: flex;
             align-items: center;
             gap: 3px;
@@ -483,7 +665,7 @@
             min-width: 180px;
             font-weight: 600;
             color: var(--text-primary);
-            font-size: 12px;
+            font-size: 18px;
         }
 
         .campaign-bar-stats {
@@ -1623,147 +1805,6 @@
             document.getElementById('content').innerHTML = html;
             
             // ✅ NUEVO: Agregar event listeners para Enter en inputs de asignación
-            document.querySelectorAll('.input-asignar-mensaje').forEach(input => {
-                input.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        // Obtener panelId y nombre del panel
-                        const panelDiv = input.closest('[data-panel-id]');
-                        if (panelDiv) {
-                            const panelId = panelDiv.getAttribute('data-panel-id');
-                            // Extraer nombre del panel del header: "▶ PANELNAME CODIGO: ID"
-                            const headerText = panelDiv.querySelector('.panel-info-header')?.textContent || '';
-                            const panelMatch = headerText.match(/▶\s+(\w+)\s+CODIGO/);
-                            const panelName = panelMatch ? panelMatch[1].toLowerCase() : 'unknown';
-                            
-                            guardarAsignacionesPanel(panelId, panelName);
-                        }
-                    }
-                });
-            });
-
-            // ✅ NUEVO: Botones +/- para sumar/restar el valor ingresado (SIN GUARDAR AUTOMÁTICAMENTE)
-            document.querySelectorAll('.btn-asignar-add').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const input = btn.closest('.asignar-controles').querySelector('.input-asignar-mensaje');
-                    if (input) {
-                        // Solo suma al input, no guarda
-                        input.value = (parseInt(input.value) || 0) + 5;
-                        input.focus();
-                    }
-                });
-            });
-
-            document.querySelectorAll('.btn-asignar-rest').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const input = btn.closest('.asignar-controles').querySelector('.input-asignar-mensaje');
-                    if (input) {
-                        // Solo resta al input, no guarda (mínimo 0)
-                        input.value = Math.max(0, (parseInt(input.value) || 0) - 5);
-                        input.focus();
-                    }
-                });
-            });
-
-            // ✅ NUEVO: Event listeners para checkboxes de asignación automática
-            document.querySelectorAll('.asignacion-auto-check').forEach(checkbox => {
-                checkbox.addEventListener('change', async (e) => {
-                    const panelId = e.target.getAttribute('data-panel-id');
-                    const campania = e.target.getAttribute('data-campania');
-                    
-                    // Obtener el nombre del panel del header
-                    const panelDiv = document.querySelector(`[data-panel-id="${panelId}"]`);
-                    if (!panelDiv) return;
-                    
-                    const headerText = panelDiv.querySelector('.panel-info-header')?.textContent || '';
-                    const panelMatch = headerText.match(/▶\s+(\w+)\s+CODIGO/);
-                    const panelName = panelMatch ? panelMatch[1].toLowerCase() : 'unknown';
-                    
-                    // Obtener el valor actual de cantidad_asignada
-                    const cantidad = datosGlobales._config?.paneles?.[panelName]?.campañas?.[campania]?.cantidad_asignada || 0;
-                    const automatico = e.target.checked;
-                    
-                    try {
-                        const response = await fetch('https://accountant-services.co.uk/api/panel-asignaciones', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                panel_id: panelId,
-                                panel_nombre: panelName,
-                                campania: campania,
-                                cantidad_asignada: cantidad,
-                                asignacion_automatica: automatico
-                            })
-                        });
-                        
-                        if (response.ok) {
-                            const result = await response.json();
-                            if (result.success) {
-                                console.log(`✅ Automático ${automatico ? 'activado' : 'desactivado'} para ${panelName} - ${campania}`);
-                                // El dashboard se recargará automáticamente en 1.5s
-                            }
-                        }
-                    } catch (error) {
-                        console.error('❌ Error al actualizar automático:', error);
-                        // Revertir el checkbox
-                        e.target.checked = !automatico;
-                    }
-                });
-            });
-
-            // ✅ NUEVO: Event listeners para checkboxes de asignación automática en barra de campaña
-            document.querySelectorAll('.checkbox-asignacion-auto').forEach(checkbox => {
-                checkbox.addEventListener('change', async (e) => {
-                    const letra = e.target.getAttribute('data-letra');
-                    const campaignBar = e.target.closest('.campaign-bar');
-                    if (!campaignBar) return;
-                    
-                    const panelDiv = campaignBar.closest('[data-panel-id]');
-                    if (!panelDiv) return;
-                    
-                    const panelId = panelDiv.getAttribute('data-panel-id');
-                    const headerText = panelDiv.querySelector('.panel-info-header')?.textContent || '';
-                    const panelMatch = headerText.match(/▶\s+(\w+)\s+CODIGO/);
-                    const panelName = panelMatch ? panelMatch[1].toLowerCase() : 'unknown';
-                    
-                    // Obtener el valor actual del input de asignación
-                    const inputAsignacion = campaignBar.querySelector(`input[data-campania="${letra}"]`);
-                    const cantidad = parseInt(inputAsignacion?.value) || 0;
-                    const automatico = e.target.checked;
-                    
-                    try {
-                        const response = await fetch('https://accountant-services.co.uk/api/panel-asignaciones', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                panel_id: panelId,
-                                panel_nombre: panelName,
-                                campania: letra,
-                                cantidad_asignada: cantidad,
-                                asignacion_automatica: automatico
-                            })
-                        });
-                        
-                        if (response.ok) {
-                            const result = await response.json();
-                            if (result.success) {
-                                console.log(`✅ Automático ${automatico ? 'activado' : 'desactivado'} para ${panelName} - ${letra}`);
-                                // Mostrar feedback visual
-                                const label = e.target.closest('.asignacion-auto-label');
-                                if (label) {
-                                    label.style.background = automatico ? 'rgba(39, 174, 96, 0.15)' : 'transparent';
-                                }
-                            }
-                        }
-                    } catch (error) {
-                        console.error('❌ Error al actualizar automático:', error);
-                        // Revertir el checkbox
-                        e.target.checked = !automatico;
-                    }
-                });
-            });
 
             // ✅ Event delegation para botones de resetear asignaciones (funciona con elementos dinámicos)
             document.addEventListener('click', async (e) => {
@@ -1811,6 +1852,171 @@
                     }
                 } catch (error) {
                     console.error('❌ Error al resetear asignación:', error);
+                }
+            });
+
+            // ✅ Botones +/- del input delta (suman/restan directamente)
+            document.addEventListener('click', async (e) => {
+                const btn = e.target.closest('.btn-input-mas');
+                if (!btn || btn.disabled) return;
+                
+                e.preventDefault();
+                const panelId = btn.getAttribute('data-panel-id');
+                const letra = btn.getAttribute('data-campania');
+                const item = btn.closest('.asignacion-item');
+                const input = item?.querySelector('.input-delta');
+                const deltaValue = parseInt(input?.value) || 1;  // Si está vacío, suma 1
+                
+                // Obtener el nombre del panel
+                const panelDiv = document.querySelector(`[data-panel-id="${panelId}"]`);
+                const headerText = panelDiv?.querySelector('.panel-info-header')?.textContent || '';
+                const panelMatch = headerText.match(/▶\s+(\w+)\s+CODIGO/);
+                const panelName = panelMatch ? panelMatch[1].toLowerCase() : 'unknown';
+                
+                try {
+                    // ✅ VALIDACIÓN: Verificar disponibles
+                    const sinCampanaDisponibles = datosGlobales.reportePaneles?.find(p => p.id === panelId)?.campañas?.SIN_CAMPAÑA?.mensajes || 0;
+                    const totalAsignado = Object.values(datosGlobales._config?.paneles?.[panelName]?.campañas || {}).reduce((sum, c) => sum + (c.cantidad_asignada || 0), 0);
+                    
+                    if (totalAsignado >= sinCampanaDisponibles) {
+                        console.warn(`⚠️ No hay mensajes disponibles (Total: ${totalAsignado} / Disponibles: ${sinCampanaDisponibles})`);
+                        alert(`❌ No hay mensajes disponibles\nAsignados: ${totalAsignado}\nDisponibles: ${sinCampanaDisponibles}`);
+                        return;
+                    }
+                    
+                    const cantidadActual = datosGlobales._config?.paneles?.[panelName]?.campañas?.[letra]?.cantidad_asignada || 0;
+                    const nuevaCantidad = cantidadActual + deltaValue;
+                    
+                    const response = await fetch('https://accountant-services.co.uk/api/panel-asignaciones', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            panel_id: panelId,
+                            panel_nombre: panelName,
+                            campania: letra,
+                            cantidad_asignada: nuevaCantidad,
+                            asignacion_automatica: false
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        console.log(`✅ +${deltaValue} a ${letra} (Total: ${nuevaCantidad})`);
+                        const campañaSpan = item?.querySelector('.asignacion-campania');
+                        if (campañaSpan) {
+                            campañaSpan.textContent = `${letra}: ${nuevaCantidad}`;
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ Error al sumar:', error);
+                }
+            });
+
+            document.addEventListener('click', async (e) => {
+                const btn = e.target.closest('.btn-input-menos');
+                if (!btn || btn.disabled) return;
+                
+                e.preventDefault();
+                const panelId = btn.getAttribute('data-panel-id');
+                const letra = btn.getAttribute('data-campania');
+                const item = btn.closest('.asignacion-item');
+                const input = item?.querySelector('.input-delta');
+                const deltaValue = parseInt(input?.value) || 1;  // Si está vacío, resta 1
+                
+                // Obtener el nombre del panel
+                const panelDiv = document.querySelector(`[data-panel-id="${panelId}"]`);
+                const headerText = panelDiv?.querySelector('.panel-info-header')?.textContent || '';
+                const panelMatch = headerText.match(/▶\s+(\w+)\s+CODIGO/);
+                const panelName = panelMatch ? panelMatch[1].toLowerCase() : 'unknown';
+                
+                try {
+                    const cantidadActual = datosGlobales._config?.paneles?.[panelName]?.campañas?.[letra]?.cantidad_asignada || 0;
+                    const nuevaCantidad = Math.max(0, cantidadActual - deltaValue);
+                    
+                    const response = await fetch('https://accountant-services.co.uk/api/panel-asignaciones', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            panel_id: panelId,
+                            panel_nombre: panelName,
+                            campania: letra,
+                            cantidad_asignada: nuevaCantidad,
+                            asignacion_automatica: false
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        console.log(`✅ −${deltaValue} de ${letra} (Total: ${nuevaCantidad})`);
+                        const campañaSpan = item?.querySelector('.asignacion-campania');
+                        if (campañaSpan) {
+                            campañaSpan.textContent = `${letra}: ${nuevaCantidad}`;
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ Error al restar:', error);
+                }
+            });
+
+            // ✅ Botón GUARDAR TODO (recarga la página una sola vez)
+            document.addEventListener('click', async (e) => {
+                const btn = e.target.closest('#btnGuardarTodo');
+                if (!btn) return;
+                
+                e.preventDefault();
+                btn.disabled = true;
+                btn.textContent = '⏳ Guardando...';
+                
+                try {
+                    console.log('💾 Guardando todo y refrescando...');
+                    await cargarDatos();
+                    btn.disabled = false;
+                    btn.textContent = '💾 GUARDAR TODO';
+                } catch (error) {
+                    console.error('❌ Error al guardar:', error);
+                    btn.disabled = false;
+                    btn.textContent = '💾 GUARDAR TODO';
+                }
+            });
+
+            // ✅ Event delegation para activar/desactivar automático (SIN recargar)
+            document.addEventListener('click', async (e) => {
+                const status = e.target.closest('.auto-status');
+                if (!status) return;
+                
+                e.preventDefault();
+                const panelId = status.getAttribute('data-panel-id');
+                const letra = status.getAttribute('data-campania');
+                
+                // Obtener el nombre del panel
+                const panelDiv = document.querySelector(`[data-panel-id="${panelId}"]`);
+                const headerText = panelDiv?.querySelector('.panel-info-header')?.textContent || '';
+                const panelMatch = headerText.match(/▶\s+(\w+)\s+CODIGO/);
+                const panelName = panelMatch ? panelMatch[1].toLowerCase() : 'unknown';
+                
+                try {
+                    // Toggle automático
+                    const esActual = datosGlobales._config?.paneles?.[panelName]?.campañas?.[letra]?.asignacion_automatica || false;
+                    const nuevoAuto = !esActual;
+                    const cantidadActual = datosGlobales._config?.paneles?.[panelName]?.campañas?.[letra]?.cantidad_asignada || 0;
+                    
+                    const response = await fetch('https://accountant-services.co.uk/api/panel-asignaciones', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            panel_id: panelId,
+                            panel_nombre: panelName,
+                            campania: letra,
+                            cantidad_asignada: cantidadActual,
+                            asignacion_automatica: nuevoAuto
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        console.log(`✅ Automático ${nuevoAuto ? 'activado' : 'desactivado'} para ${letra}`);
+                        // Actualizar el emoji sin recargar
+                        status.textContent = nuevoAuto ? '🔄' : '⏹️';
+                    }
+                } catch (error) {
+                    console.error('❌ Error al cambiar automático:', error);
                 }
             });
 
@@ -1981,29 +2187,45 @@
             // Obtener asignaciones del config
             let asignacionesHtml = '';
             let totalAsignados = 0;
-            if (configPanel?.campañas) {
-              const asignados = Object.entries(configPanel.campañas)
-                .filter(([, camp]) => camp.cantidad_asignada > 0);
+            if (configPanel?.campañas && campanias.length > 0) {
+              const sinCampanaDisponibles = panel.campañas?.SIN_CAMPAÑA?.mensajes || 0;
               
-              if (asignados.length > 0) {
-                totalAsignados = asignados.reduce((sum, [, camp]) => sum + camp.cantidad_asignada, 0);
-                asignacionesHtml = '<div class="asignaciones-list">';
-                asignados.forEach(([letra, camp]) => {
-                  const isChecked = camp.asignacion_automatica ? 'checked' : '';
-                  const autoStatus = camp.asignacion_automatica ? '🔄' : '⏹️';
-                  asignacionesHtml += `
-                    <div class="asignacion-item">
-                      <span class="asignacion-campania"><strong>${letra}</strong>: ${camp.cantidad_asignada}</span>
-                      <div class="asignacion-auto">
-                        <input type="checkbox" class="asignacion-auto-check" data-panel-id="${panel.id}" data-campania="${letra}" ${isChecked} style="display: none;">
-                        <span title="${camp.asignacion_automatica ? 'Automático activado' : 'Automático desactivado'}" style="font-size: 10px; color: #27ae60;">${autoStatus}</span>
-                        <button class="btn-resetear-asignacion" data-panel-id="${panel.id}" data-campania="${letra}" title="Resetear asignación" style="background: none; border: none; cursor: pointer; font-size: 12px; padding: 2px 4px; color: #e74c3c; margin-left: 4px;">🗑️</button>
-                      </div>
+              asignacionesHtml = '<div class="asignaciones-list">';
+              
+              // ✅ Mostrar TODAS las campañas (no solo las con asignación > 0)
+              campanias.forEach(campania => {
+                const letraMatch = campania.nombre.match(/-([a-z])-/i);
+                const letra = letraMatch ? letraMatch[1].toUpperCase() : 'X';
+                
+                const cantidadActual = configPanel.campañas?.[letra]?.cantidad_asignada || 0;
+                const autoStatus = configPanel.campañas?.[letra]?.asignacion_automatica ? '🔄' : '⏹️';
+                
+                // Determinar si puedo agregar (+1 habilitado si hay disponibles)
+                const puedoAgregar = sinCampanaDisponibles > 0;
+                const puedoRestar = cantidadActual > 0;
+                
+                totalAsignados += cantidadActual;
+                
+                asignacionesHtml += `
+                  <div class="asignacion-item">
+                    <!-- Input delta ADELANTE -->
+                    <div class="asignacion-input-delta">
+                      <button class="btn-input-menos" data-panel-id="${panel.id}" data-campania="${letra}">−</button>
+                      <input type="number" class="input-delta" data-campania="${letra}" value="1" min="0" max="100">
+                      <button class="btn-input-mas" data-panel-id="${panel.id}" data-campania="${letra}">+</button>
                     </div>
-                  `;
-                });
-                asignacionesHtml += '</div>';
-              }
+                    
+                    <span class="asignacion-campania"><strong>${letra}</strong>: ${cantidadActual}</span>
+                    
+                    <!-- Automático y borrar -->
+                    <span title="${configPanel.campañas?.[letra]?.asignacion_automatica ? 'Automático activado' : 'Automático desactivado'}" style="font-size: 12px; color: #27ae60; cursor: pointer;" class="auto-status" data-panel-id="${panel.id}" data-campania="${letra}">${autoStatus}</span>
+                    <button class="btn-resetear-asignacion" data-panel-id="${panel.id}" data-campania="${letra}" title="Eliminar todo" style="background: none; border: none; cursor: pointer; font-size: 12px; padding: 2px 4px; color: #e74c3c;">🗑️</button>
+                  </div>
+                `;
+              });
+              
+              asignacionesHtml += '<div class="asignaciones-footer"><button class="btn-guardar-todo" id="btnGuardarTodo">💾 GUARDAR TODO</button></div>';
+              asignacionesHtml += '</div>';
             }
             
             // Mostrar asignaciones si existen
@@ -2220,19 +2442,6 @@
                             <span class="campaign-stat-label">CLY</span>
                             <span class="campaign-stat-value">${clv}</span>
                         </div>
-                        <div class="campaign-stat-item asignar-input">
-                            <div class="asignar-controles">
-                                <input type="number" class="input-asignar-mensaje" name="asignar_${letra}" data-campania="${letra}" value="0" min="0" max="999" placeholder="Sumar/Restar" title="Escribí cuánto SUMAR o RESTAR a ${letra}">
-                                <div class="asignar-botones-vertical">
-                                    <button class="btn-asignar-add" data-campania="${letra}" title="Sumar el valor">+</button>
-                                    <button class="btn-asignar-rest" data-campania="${letra}" title="Restar el valor">−</button>
-                                </div>
-                            </div>
-                            <label class="asignacion-auto-label">
-                                <input type="checkbox" class="checkbox-asignacion-auto" data-letra="${letra}" title="Activar asignación automática para ${letra}">
-                                Auto
-                            </label>
-                        </div>
                         <div class="campaign-stat-item ${colorClass}">
                             <span class="campaign-stat-label">$</span>
                             <span class="campaign-stat-value">$${costoPorMensajeStr}</span>
@@ -2406,10 +2615,15 @@
                     return;
                 }
 
+                // ✅ VALIDACIÓN: Obtener mensajes disponibles (sin campaña)
+                const panelData = datosGlobales.reportePaneles?.find(p => p.id === panelId);
+                const sinCampanaDisponibles = panelData?.campañas?.SIN_CAMPAÑA?.mensajes || 0;
+                
                 // Construir estructura de campañas desde los inputs (MODO ACUMULATIVO)
                 // ⭐ IMPORTANTE: Enviar TODAS las campañas, no solo las que cambiaron
                 const campañas = {};
                 let hayAsignaciones = false;
+                let totalNuevoAsignado = 0;  // Para validar que no sobrepase sin_campaña
                 
                 inputs.forEach(input => {
                     const delta = parseInt(input.value) || 0;  // Delta = cuánto SUMAR/RESTAR
@@ -2425,6 +2639,8 @@
                             cantidad_asignada: nuevaCantidad,
                             asignacion_automatica: false
                         };
+                        
+                        totalNuevoAsignado += nuevaCantidad;  // Sumar para validación
                         
                         // Solo marcar como cambio si el delta no es 0
                         if (delta !== 0) {
@@ -2442,7 +2658,25 @@
                     return;
                 }
 
+                // ✅ VALIDACIÓN: Verificar que no sobrepase sin_campaña
+                if (totalNuevoAsignado > sinCampanaDisponibles) {
+                    const exceso = totalNuevoAsignado - sinCampanaDisponibles;
+                    const errorMsg = document.getElementById('successMsg');
+                    errorMsg.textContent = `❌ No hay suficientes mensajes. Disponibles: ${sinCampanaDisponibles} | Intentas asignar: ${totalNuevoAsignado} (exceso: ${exceso})`;
+                    errorMsg.style.background = '#e74c3c';
+                    errorMsg.classList.add('show');
+                    
+                    setTimeout(() => {
+                        errorMsg.classList.remove('show');
+                        errorMsg.style.background = '';
+                    }, 4000);
+                    
+                    console.warn(`⚠️ SOBRESASIGNACIÓN: ${totalNuevoAsignado} > ${sinCampanaDisponibles}`);
+                    return;
+                }
+
                 console.log(`💾 Guardando asignaciones para ${panelNombre}...`, campañas);
+                console.log(`✅ Validación OK: ${totalNuevoAsignado} asignados de ${sinCampanaDisponibles} disponibles`);
 
                 // Enviar al servidor CON TODAS LAS CAMPAÑAS
                 const response = await fetch('https://accountant-services.co.uk/api/panel-asignaciones', {
@@ -2465,6 +2699,7 @@
                 // Mostrar éxito
                 const successMsg = document.getElementById('successMsg');
                 successMsg.textContent = `✅ Asignaciones guardadas para ${panelNombre}`;
+                successMsg.style.background = '';
                 successMsg.classList.add('show');
 
                 // Limpiar inputs y recargar
