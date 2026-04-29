@@ -271,6 +271,25 @@
             box-shadow: 0 0 4px rgba(93, 173, 226, 0.3);
         }
 
+        body.dark-mode .btn-asignar-add,
+        body.dark-mode .btn-asignar-rest {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        body.dark-mode .btn-asignar-add:hover {
+            background: #229954;
+            color: white;
+            border-color: #1e8449;
+        }
+
+        body.dark-mode .btn-asignar-rest:hover {
+            background: #c0392b;
+            color: white;
+            border-color: #a93226;
+        }
+
         body.dark-mode .input-objetivo {
             background: var(--bg-tertiary);
             color: var(--text-primary);
@@ -481,6 +500,55 @@
             outline: none;
             border-color: #2980b9;
             box-shadow: 0 0 4px rgba(41, 128, 185, 0.3);
+        }
+
+        .asignar-controles {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+        }
+
+        .input-asignar-mensaje {
+            flex: 1;
+            max-width: 50px;
+        }
+
+        .asignar-botones-vertical {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .btn-asignar-add,
+        .btn-asignar-rest {
+            padding: 3px 8px;
+            font-size: 12px;
+            font-weight: bold;
+            border: 1px solid #bdc3c7;
+            border-radius: 2px;
+            background: #ecf0f1;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            min-width: 28px;
+            color: #2c3e50;
+            line-height: 1;
+        }
+
+        .btn-asignar-add:hover {
+            background: #27ae60;
+            color: white;
+            border-color: #229954;
+        }
+
+        .btn-asignar-rest:hover {
+            background: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+
+        .btn-asignar-add:active,
+        .btn-asignar-rest:active {
+            transform: scale(0.95);
         }
 
         .checkbox-asignacion-auto {
@@ -1550,6 +1618,54 @@
                 });
             });
 
+            // ✅ NUEVO: Botones +/- para sumar/restar el valor ingresado
+            document.querySelectorAll('.btn-asignar-add').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const input = btn.closest('.asignar-controles').querySelector('.input-asignar-mensaje');
+                    if (input) {
+                        const valor = parseInt(input.value) || 0;
+                        // Obtener panel actual
+                        const panelDiv = input.closest('[data-panel-id]');
+                        if (panelDiv) {
+                            const panelId = panelDiv.getAttribute('data-panel-id');
+                            const headerText = panelDiv.querySelector('.panel-info-header')?.textContent || '';
+                            const panelMatch = headerText.match(/▶\s+(\w+)\s+CODIGO/);
+                            const panelName = panelMatch ? panelMatch[1].toLowerCase() : 'unknown';
+                            
+                            // Si valor > 0, guardar
+                            if (valor > 0) {
+                                guardarAsignacionesPanel(panelId, panelName);
+                            }
+                        }
+                    }
+                });
+            });
+
+            document.querySelectorAll('.btn-asignar-rest').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const input = btn.closest('.asignar-controles').querySelector('.input-asignar-mensaje');
+                    if (input) {
+                        const valor = parseInt(input.value) || 0;
+                        // Hacer el valor negativo y guardar
+                        if (valor > 0) {
+                            input.value = -valor;
+                            // Obtener panel actual
+                            const panelDiv = input.closest('[data-panel-id]');
+                            if (panelDiv) {
+                                const panelId = panelDiv.getAttribute('data-panel-id');
+                                const headerText = panelDiv.querySelector('.panel-info-header')?.textContent || '';
+                                const panelMatch = headerText.match(/▶\s+(\w+)\s+CODIGO/);
+                                const panelName = panelMatch ? panelMatch[1].toLowerCase() : 'unknown';
+                                
+                                guardarAsignacionesPanel(panelId, panelName);
+                            }
+                        }
+                    }
+                });
+            });
+
             // ✅ NUEVO: Event listeners para checkboxes de asignación automática
             document.querySelectorAll('.asignacion-auto-check').forEach(checkbox => {
                 checkbox.addEventListener('change', async (e) => {
@@ -2100,7 +2216,13 @@
                             <span class="campaign-stat-value">${clv}</span>
                         </div>
                         <div class="campaign-stat-item asignar-input">
-                            <input type="number" class="input-asignar-mensaje" name="asignar_${letra}" data-campania="${letra}" value="0" min="0" max="999" placeholder="Asignar" title="Asignar a ${letra}">
+                            <div class="asignar-controles">
+                                <input type="number" class="input-asignar-mensaje" name="asignar_${letra}" data-campania="${letra}" value="0" min="0" max="999" placeholder="Sumar/Restar" title="Escribí cuánto SUMAR o RESTAR a ${letra}">
+                                <div class="asignar-botones-vertical">
+                                    <button class="btn-asignar-add" data-campania="${letra}" title="Sumar el valor">+</button>
+                                    <button class="btn-asignar-rest" data-campania="${letra}" title="Restar el valor">−</button>
+                                </div>
+                            </div>
                             <label class="asignacion-auto-label">
                                 <input type="checkbox" class="checkbox-asignacion-auto" data-letra="${letra}" title="Activar asignación automática para ${letra}">
                                 Auto
@@ -2279,26 +2401,31 @@
                     return;
                 }
 
-                // Construir estructura de campañas desde los inputs
+                // Construir estructura de campañas desde los inputs (MODO ACUMULATIVO)
                 const campañas = {};
                 let hayAsignaciones = false;
                 
                 inputs.forEach(input => {
-                    const valor = parseInt(input.value) || 0;
+                    const delta = parseInt(input.value) || 0;  // Delta = cuánto SUMAR
                     const letra = input.getAttribute('data-campania');
                     
-                    if (letra) {
+                    if (letra && delta !== 0) {  // Solo si hay algo que sumar/restar
+                        // Obtener cantidad actual del config
+                        const cantidadActual = datosGlobales._config?.paneles?.[panelNombre]?.campañas?.[letra]?.cantidad_asignada || 0;
+                        const nuevaCantidad = Math.max(0, cantidadActual + delta);  // No permitir negativos
+                        
                         campañas[letra] = {
-                            cantidad_asignada: valor,
+                            cantidad_asignada: nuevaCantidad,
                             asignacion_automatica: false
                         };
-                        if (valor > 0) hayAsignaciones = true;
+                        hayAsignaciones = true;
+                        console.log(`📝 ${letra}: ${cantidadActual} + ${delta} = ${nuevaCantidad}`);
                     }
                 });
 
-                // Si no hay asignaciones con valor > 0, no enviar
+                // Si no hay asignaciones con cambios, no enviar
                 if (!hayAsignaciones) {
-                    console.log('ℹ️ Sin asignaciones para guardar');
+                    console.log('ℹ️ Sin cambios para guardar');
                     return;
                 }
 
