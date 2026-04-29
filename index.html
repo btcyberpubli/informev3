@@ -113,6 +113,17 @@
             box-shadow: 0 6px 12px rgba(41, 128, 185, 0.4);
         }
 
+        .btn-info {
+            background: linear-gradient(135deg, #8e44ad 0%, #714fa6 100%);
+            color: white;
+            box-shadow: 0 4px 8px rgba(142, 68, 173, 0.3);
+        }
+
+        .btn-info:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(142, 68, 173, 0.4);
+        }
+
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
@@ -1172,6 +1183,8 @@
                 <div class="timestamp" id="timestamp">Cargando...</div>
                 <button class="btn btn-refresh" id="refreshBtn" onclick="cargarDatos()">🔄 Actualizar</button>
                 <button class="btn btn-export" id="exportBtn" onclick="exportarPNG()">📥 Descargar PNG</button>
+                <button class="btn btn-info" onclick="window.open('https://informaciongeneral.vercel.app/', '_blank')">📈 Informe General</button>
+                <button class="btn btn-info" onclick="window.open('https://buscadoretiquetas.vercel.app/', '_blank')">🏷️ Buscador Etiquetas</button>
             </div>
         </div>
 
