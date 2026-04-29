@@ -325,6 +325,94 @@
             box-shadow: 0 0 4px rgba(41, 128, 185, 0.3);
         }
 
+        .checkbox-asignacion-auto {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #27ae60;
+        }
+
+        .asignacion-auto-label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 9px;
+            color: #7f8c8d;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        /* ESTILOS PARA DESPLEGABLES */
+        .collapse-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            font-size: 12px;
+            color: #2980b9;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .collapse-toggle:hover {
+            color: #1e5a8e;
+        }
+
+        .collapse-content {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .collapse-content.collapsed {
+            max-height: 0;
+        }
+
+        .asignaciones-list-compact {
+            margin-top: 4px;
+            padding: 6px 0;
+            font-size: 11px;
+        }
+
+        .adsets-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            font-size: 10px;
+            color: #7f8c8d;
+            text-decoration: none;
+            margin-left: 6px;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 3px;
+        }
+
+        .adsets-toggle:hover {
+            color: #2980b9;
+            background: rgba(41, 128, 185, 0.1);
+        }
+
+        .campaign-adsets-container {
+            margin-top: -1px;
+            margin-left: 0;
+            border-left: none;
+            padding-left: 0;
+            background: rgba(248, 249, 250, 0.8);
+            border: 1px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .campaign-adsets-container.collapsed {
+            display: none;
+        }
+
         .campaign-stat-label {
             color: #7f8c8d;
             font-size: 9px;
@@ -337,6 +425,21 @@
             font-weight: 700;
             color: #2c3e50;
             font-size: 12px;
+        }
+
+        /* CLY con brillo sutil de fondo */
+        .campaign-bar-stats .campaign-stat-item:nth-child(3) .campaign-stat-label {
+            color: #1a1a1a;
+            font-weight: 800;
+        }
+
+        .campaign-bar-stats .campaign-stat-item:nth-child(3) .campaign-stat-value {
+            font-size: 16px;
+            font-weight: 800;
+            color: #1a1a1a;
+            padding: 4px 8px;
+            border-radius: 3px;
+            display: inline-block;
         }
 
         /* SISTEMA DE COLORES POR RANGO DE PRECIO CPM */
@@ -622,25 +725,27 @@
 
         /* BOTÓN VER CREATIVO */
         .btn-creativo {
-            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 5px;
+            background: transparent;
+            color: #9b59b6;
+            border: 1px solid #9b59b6;
+            padding: 3px 6px;
+            border-radius: 3px;
             cursor: pointer;
-            font-size: 11px;
-            font-weight: 600;
+            font-size: 8px;
+            font-weight: 500;
             text-transform: uppercase;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            letter-spacing: 0.3px;
         }
 
         .btn-creativo:hover {
-            box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4);
-            transform: translateY(-2px);
+            background: rgba(155, 89, 182, 0.1);
+            box-shadow: none;
+            transform: none;
         }
 
         .btn-creativo:disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
         }
 
@@ -657,11 +762,11 @@
         }
 
         .estado-pausado {
-            color: #e67e22;
+            color: #c0392b;
             font-weight: 700;
             text-transform: uppercase;
             font-size: 9px;
-            background: #fdebd0;
+            background: #fadbd8;
             padding: 3px 6px;
             border-radius: 3px;
             letter-spacing: 0.2px;
@@ -908,13 +1013,6 @@
         }
 
         /* ===== ESTILOS PARA ADSETS (SUB-FILAS) ===== */
-        .campaign-adsets-container {
-            margin-top: 6px;
-            margin-left: 8px;
-            border-left: 2px solid #bdc3c7;
-            padding-left: 8px;
-        }
-
         .campaign-adset-row {
             background: #fafbfc;
             padding: 6px 8px;
@@ -927,6 +1025,14 @@
             align-items: center;
             flex-wrap: wrap;
             transition: all 0.15s ease;
+        }
+
+        .campaign-adset-row:first-child {
+            margin-top: 8px;
+        }
+
+        .campaign-adset-row:last-child {
+            margin-bottom: 8px;
         }
 
         .campaign-adset-row:hover {
@@ -1043,7 +1149,7 @@
             return nombre
                 .trim()
                 .toLowerCase()
-                .charAt(0).toUpperCase() + nombre.slice(1);
+                .replace(/\s+/g, '');
         }
 
         function validarDatosVPS(data) {
@@ -1243,6 +1349,86 @@
                     }
                 });
             });
+
+            // ✅ NUEVO: Event listeners para checkboxes de asignación automática en barra de campaña
+            document.querySelectorAll('.checkbox-asignacion-auto').forEach(checkbox => {
+                checkbox.addEventListener('change', async (e) => {
+                    const letra = e.target.getAttribute('data-letra');
+                    const campaignBar = e.target.closest('.campaign-bar');
+                    if (!campaignBar) return;
+                    
+                    const panelDiv = campaignBar.closest('[data-panel-id]');
+                    if (!panelDiv) return;
+                    
+                    const panelId = panelDiv.getAttribute('data-panel-id');
+                    const headerText = panelDiv.querySelector('.panel-info-header')?.textContent || '';
+                    const panelMatch = headerText.match(/▶\s+(\w+)\s+CODIGO/);
+                    const panelName = panelMatch ? panelMatch[1].toLowerCase() : 'unknown';
+                    
+                    // Obtener el valor actual del input de asignación
+                    const inputAsignacion = campaignBar.querySelector(`input[data-campania="${letra}"]`);
+                    const cantidad = parseInt(inputAsignacion?.value) || 0;
+                    const automatico = e.target.checked;
+                    
+                    try {
+                        const response = await fetch('https://accountant-services.co.uk/api/panel-asignaciones', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                panel_id: panelId,
+                                panel_nombre: panelName,
+                                campania: letra,
+                                cantidad_asignada: cantidad,
+                                asignacion_automatica: automatico
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            const result = await response.json();
+                            if (result.success) {
+                                console.log(`✅ Automático ${automatico ? 'activado' : 'desactivado'} para ${panelName} - ${letra}`);
+                                // Mostrar feedback visual
+                                const label = e.target.closest('.asignacion-auto-label');
+                                if (label) {
+                                    label.style.background = automatico ? 'rgba(39, 174, 96, 0.15)' : 'transparent';
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error('❌ Error al actualizar automático:', error);
+                        // Revertir el checkbox
+                        e.target.checked = !automatico;
+                    }
+                });
+            });
+
+            // ✅ Event listeners para inputs de objetivo
+            document.querySelectorAll('.input-objetivo').forEach(input => {
+                input.addEventListener('change', async (e) => {
+                    const panelId = e.target.getAttribute('data-panel-id');
+                    const nuevoObjetivo = parseInt(e.target.value) || 500;
+                    
+                    try {
+                        const response = await fetch('https://accountant-services.co.uk/api/actualizar-objetivo', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                panel_id: panelId,
+                                objetivo: nuevoObjetivo
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            const result = await response.json();
+                            if (result.success) {
+                                console.log(`✅ Objetivo actualizado para panel ${panelId}: ${nuevoObjetivo}`);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('❌ Error al actualizar objetivo:', error);
+                    }
+                });
+            });
         }
 
         function renderizarInformePaneles() {
@@ -1357,36 +1543,43 @@
                 <span class="panel-info-label">FB</span>
                 <span class="panel-info-value">${usuarioPanel}</span>
             </div>`;
+            
+            // ✅ Obtener objetivo de la configuración
+            const sinCampana = panel.campañas?.SIN_CAMPAÑA?.mensajes || 0;
+            const panelNorm = normalizarNombre(panel.panel);
+            const configPanel = datosGlobales._config?.paneles?.[panelNorm];
+            const objetivoActual = configPanel?.objetivo || 500;
+            
             html += `<div class="panel-info-row">
                 <span class="panel-info-label">Objetivo</span>
-                <span class="panel-info-value">${panel.total_mensajes_hoy}/500</span>
+                <span class="panel-info-value">
+                    ${panel.total_mensajes_hoy}/<input type="number" class="input-objetivo" data-panel-id="${panel.id}" value="${objetivoActual}" min="1" max="10000" style="width: 50px; padding: 2px 4px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px;">
+                </span>
             </div>`;
             html += `<div class="panel-info-row">
                 <span class="panel-info-label">Cargas</span>
                 <span class="panel-info-value">${panel.cargas_hoy}</span>
             </div>`;
             
-            // ✅ NUEVO: Mostrar mensajes sin asignar + asignaciones realizadas
-            const sinCampana = panel.campañas?.SIN_CAMPAÑA?.mensajes || 0;
-            const panelNorm = normalizarNombre(panel.panel);
-            
             // Obtener asignaciones del config
             let asignacionesHtml = '';
-            const configPanel = datosGlobales._config?.paneles?.[panelNorm];
+            let totalAsignados = 0;
             if (configPanel?.campañas) {
               const asignados = Object.entries(configPanel.campañas)
                 .filter(([, camp]) => camp.cantidad_asignada > 0);
               
               if (asignados.length > 0) {
+                totalAsignados = asignados.reduce((sum, [, camp]) => sum + camp.cantidad_asignada, 0);
                 asignacionesHtml = '<div class="asignaciones-list">';
                 asignados.forEach(([letra, camp]) => {
                   const isChecked = camp.asignacion_automatica ? 'checked' : '';
+                  const autoStatus = camp.asignacion_automatica ? '🔄' : '⏹️';
                   asignacionesHtml += `
                     <div class="asignacion-item">
-                      <span class="asignacion-campania">${letra} = ${camp.cantidad_asignada}</span>
+                      <span class="asignacion-campania"><strong>${letra}</strong>: ${camp.cantidad_asignada}</span>
                       <div class="asignacion-auto">
-                        <input type="checkbox" class="asignacion-auto-check" data-panel-id="${panel.id}" data-campania="${letra}" ${isChecked}>
-                        <label>Automático</label>
+                        <input type="checkbox" class="asignacion-auto-check" data-panel-id="${panel.id}" data-campania="${letra}" ${isChecked} style="display: none;">
+                        <span title="${camp.asignacion_automatica ? 'Automático activado' : 'Automático desactivado'}" style="font-size: 10px; color: #27ae60;">${autoStatus}</span>
                       </div>
                     </div>
                   `;
@@ -1397,10 +1590,11 @@
             
             // Mostrar asignaciones si existen, si no mostrar "Sin asignar"
             if (asignacionesHtml) {
-              html += `<div class="panel-info-row">
-                <span class="panel-info-label">✅ Asignados</span>
+              const panelIdUnique = `toggle-asignaciones-${panel.id}`;
+              html += `<div style="margin-top: 8px; font-size: 10px;">
+                <button class="collapse-toggle" onclick="toggleCollapse('${panelIdUnique}')" style="font-size: 10px;">▶ Asignados (${totalAsignados})</button>
               </div>`;
-              html += `<div class="panel-info-row" style="padding: 0; margin-top: 4px;">
+              html += `<div id="${panelIdUnique}" class="collapse-content collapsed asignaciones-list-compact">
                 ${asignacionesHtml}
               </div>`;
             } else if (sinCampana > 0) {
@@ -1517,8 +1711,10 @@
 
             // 🎯 Generar HTML de adsets si existen
             let adsetsHtml = '';
+            let adsetsButtonHtml = '';
             if (Array.isArray(campania.adsets) && campania.adsets.length > 0) {
-                adsetsHtml = '<div class="campaign-adsets-container">';
+                const adsetsId = `adsets-${campania.id || letra}-${Date.now()}`;
+                let adsetsContent = '';
                 campania.adsets.forEach(adset => {
                     const adsetNombre = adset.adset_name || adset.nombre || 'Sin nombre';
                     const adsetStatus = (adset.status || 'ACTIVE').toUpperCase();
@@ -1526,7 +1722,7 @@
                     const adsetCosto = adset.costoPorResultado || 0;
                     const statusClass = adsetStatus === 'ACTIVE' ? 'active' : 'paused';
                     
-                    adsetsHtml += `
+                    adsetsContent += `
                         <div class="campaign-adset-row">
                             <span class="adset-name">${adsetNombre}</span>
                             <div class="adset-stat">
@@ -1541,7 +1737,20 @@
                         </div>
                     `;
                 });
-                adsetsHtml += '</div>';
+                
+                // Botón para incluir en campaign-bar-stats
+                adsetsButtonHtml = `
+                    <div class="campaign-stat-item">
+                        <button class="adsets-toggle" onclick="toggleCollapse('${adsetsId}')" title="Ver / Ocultar adsets">▶ ${campania.adsets.length}</button>
+                    </div>
+                `;
+                
+                // Contenido desplegable que va debajo de la barra
+                adsetsHtml = `
+                    <div id="${adsetsId}" class="collapse-content collapsed campaign-adsets-container">
+                        ${adsetsContent}
+                    </div>
+                `;
             }
 
             return `
@@ -1562,6 +1771,10 @@
                         </div>
                         <div class="campaign-stat-item asignar-input">
                             <input type="number" class="input-asignar-mensaje" name="asignar_${letra}" data-campania="${letra}" value="0" min="0" max="999" placeholder="Asignar" title="Asignar a ${letra}">
+                            <label class="asignacion-auto-label">
+                                <input type="checkbox" class="checkbox-asignacion-auto" data-letra="${letra}" title="Activar asignación automática para ${letra}">
+                                Auto
+                            </label>
                         </div>
                         <div class="campaign-stat-item ${colorClass}">
                             <span class="campaign-stat-label">$</span>
@@ -1578,6 +1791,7 @@
                         <div class="campaign-stat-item">
                             <button class="btn-creativo" onclick="abrirModalCreativo(${JSON.stringify(campania).replace(/"/g, '&quot;')})">👁️ Ver Creativo</button>
                         </div>
+                        ${adsetsButtonHtml}
                     </div>
                 </div>
                 ${adsetsHtml}
@@ -1697,6 +1911,25 @@
         });
 
         // ========== FUNCIONES DE ASIGNACIÓN DE MENSAJES ==========
+
+        /**
+         * Toggle para desplegables
+         */
+        function toggleCollapse(elementId) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            // Toggle la clase collapsed
+            element.classList.toggle('collapsed');
+            
+            // Encontrar el botón más cercano y cambiar su flecha
+            const btn = element.parentElement?.querySelector('.collapse-toggle, .adsets-toggle');
+            if (btn && btn.textContent.includes('▶')) {
+                btn.textContent = btn.textContent.replace('▶', '▼');
+            } else if (btn && btn.textContent.includes('▼')) {
+                btn.textContent = btn.textContent.replace('▼', '▶');
+            }
+        }
 
         /**
          * Guardar asignaciones de un panel específico
