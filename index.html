@@ -700,6 +700,108 @@
             display: block;
         }
 
+        /* ESTILOS PARA ASIGNACIÓN DE MENSAJES */
+        .asignacion-section {
+            background: #f0f8ff;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #2980b9;
+            margin-top: 12px;
+        }
+
+        .asignacion-title {
+            font-weight: 700;
+            color: #2980b9;
+            font-size: 12px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .sin-campania-info {
+            background: white;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            border-left: 3px solid #e74c3c;
+            color: #2c3e50;
+        }
+
+        .sin-campania-count {
+            font-weight: 700;
+            color: #e74c3c;
+            font-size: 14px;
+        }
+
+        .campania-form {
+            background: white;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            display: grid;
+            grid-template-columns: 60px 1fr 90px;
+            gap: 8px;
+            align-items: center;
+            border: 1px solid #bdc3c7;
+        }
+
+        .campania-label {
+            font-weight: 700;
+            color: #2c3e50;
+            font-size: 12px;
+        }
+
+        .campania-input {
+            padding: 5px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 11px;
+            width: 70px;
+        }
+
+        .campania-auto {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .campania-auto input[type="checkbox"] {
+            cursor: pointer;
+        }
+
+        .campania-auto label {
+            font-size: 10px;
+            color: #7f8c8d;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .btn-guardar-asignaciones {
+            background: linear-gradient(135deg, #2980b9 0%, #2471a3 100%);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .btn-guardar-asignaciones:hover:not(:disabled) {
+            box-shadow: 0 4px 12px rgba(41, 128, 185, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-guardar-asignaciones:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         @media print {
             body {
                 background: white;
@@ -1039,6 +1141,17 @@
                 html += '<div style="padding: 16px; color: #999; font-size: 15px;">Sin campañas con gasto</div>';
                 html += `<div class="totales-cargas">Total CLY: 0</div>`;
             }
+
+            // ✅ NUEVO: Sección de asignación de mensajes sin campaña
+            const sinCampana = panel.campañas?.SIN_CAMPAÑA?.mensajes || 0;
+            if (sinCampana > 0) {
+                html += '<div class="asignacion-section">';
+                html += '<div class="asignacion-title">📌 Reasignar mensajes sin campaña</div>';
+                html += `<div class="sin-campania-info">Mensajes sin asignar: <span class="sin-campania-count">${sinCampana}</span></div>`;
+                html += generarFormularioAsignaciones(panel);
+                html += '</div>';
+            }
+
             html += '</div>';
 
             html += '</div>';
@@ -1257,6 +1370,123 @@
         window.addEventListener('beforeunload', () => {
             if (autoRefreshId) clearInterval(autoRefreshId);
         });
+
+        // ========== FUNCIONES DE ASIGNACIÓN DE MENSAJES ==========
+
+        /**
+         * Generar formulario para asignar mensajes sin campaña
+         */
+        function generarFormularioAsignaciones(panel) {
+            let html = '';
+            
+            // Obtener campañas del panel de reportePaneles
+            const campanias = panel.campañas || {};
+            const letras = Object.keys(campanias).filter(letra => letra !== 'SIN_CAMPAÑA');
+
+            if (letras.length === 0) {
+                html += '<div style="font-size: 11px; color: #999;">No hay campañas para asignar</div>';
+                return html;
+            }
+
+            html += `<form id="form-asignaciones-${panel.id}">`;
+
+            letras.forEach(letra => {
+                const campania = campanias[letra];
+                const cantidad = campania.mensajes || 0;
+                const cargas = campania.cargas || 0;
+
+                html += `
+                    <div class="campania-form">
+                        <span class="campania-label">Camp. ${letra}</span>
+                        <div style="display: flex; gap: 5px; align-items: center;">
+                            <span style="font-size: 10px; color: #7f8c8d;">${cantidad} msgs</span>
+                            <input type="number" class="campania-input" name="cantidad_${letra}" value="0" min="0" placeholder="Asignar">
+                        </div>
+                        <div class="campania-auto">
+                            <input type="checkbox" id="auto_${panel.id}_${letra}" name="auto_${letra}" value="true">
+                            <label for="auto_${panel.id}_${letra}">Automático</label>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                <button type="button" class="btn-guardar-asignaciones" onclick="guardarAsignaciones('${panel.panel}', ${panel.id})">
+                    💾 Guardar Asignaciones
+                </button>
+            </form>`;
+
+            return html;
+        }
+
+        /**
+         * Guardar asignaciones en el servidor
+         */
+        async function guardarAsignaciones(panelNombre, panelId) {
+            try {
+                const form = document.getElementById(`form-asignaciones-${panelId}`);
+                if (!form) {
+                    console.error('❌ Formulario no encontrado');
+                    return;
+                }
+
+                // Construir objeto de campañas con las asignaciones
+                const campañas = {};
+                const formData = new FormData(form);
+
+                // Procesar entradas
+                const letras = new Set();
+                for (const [key, value] of formData.entries()) {
+                    const match = key.match(/^(cantidad|auto)_([A-Z])$/);
+                    if (match) {
+                        letras.add(match[2]);
+                    }
+                }
+
+                // Construir estructura de campañas
+                letras.forEach(letra => {
+                    const cantidad = parseInt(formData.get(`cantidad_${letra}`) || 0) || 0;
+                    const auto = form.querySelector(`input[name="auto_${letra}"]`)?.checked || false;
+                    campañas[letra] = {
+                        cantidad_asignada: cantidad,
+                        asignacion_automatica: auto
+                    };
+                });
+
+                // Enviar al servidor
+                const response = await fetch('/api/panel-asignaciones', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        panel: panelNombre,
+                        campañas: campañas
+                    })
+                });
+
+                const resultado = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(resultado.error || 'Error al guardar asignaciones');
+                }
+
+                // Mostrar mensaje de éxito
+                const successMsg = document.getElementById('successMsg');
+                successMsg.textContent = `✅ Asignaciones guardadas para ${panelNombre}. El reporte se actualizará en breve.`;
+                successMsg.classList.add('show');
+
+                // Recargar después de 2 segundos
+                setTimeout(() => {
+                    successMsg.classList.remove('show');
+                    cargarDatos();
+                }, 2000);
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
     </script>
 
     <!-- MODAL CREATIVO -->
