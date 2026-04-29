@@ -1140,7 +1140,7 @@
                     const automatico = e.target.checked;
                     
                     try {
-                        const response = await fetch('/api/panel-asignaciones', {
+                        const response = await fetch('https://accountant-services.co.uk/api/panel-asignaciones', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -1632,7 +1632,7 @@
                 console.log(`💾 Guardando asignaciones para ${panelNombre}...`);
 
                 // Enviar al servidor
-                const response = await fetch('/api/panel-asignaciones', {
+                const response = await fetch('https://accountant-services.co.uk/api/panel-asignaciones', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
