@@ -1423,6 +1423,8 @@
                             if (result.success) {
                                 console.log(`✅ Objetivo actualizado para panel ${panelId}: ${nuevoObjetivo}`);
                             }
+                        } else {
+                            console.error(`❌ Error al actualizar objetivo: ${response.status}`);
                         }
                     } catch (error) {
                         console.error('❌ Error al actualizar objetivo:', error);
