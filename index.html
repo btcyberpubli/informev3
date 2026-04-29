@@ -1806,6 +1806,9 @@
             const configPanel = datosGlobales._config?.paneles?.[panelNorm];
             const objetivoActual = configPanel?.objetivo || 500;
             
+            // Calcular total CLY para este panel (incluyendo sin campaña)
+            const totalClvPanel = campanias.reduce((sum, camp) => sum + (camp.cly_para_campania || 0), 0) + sinCampana;
+            
             html += `<div class="panel-info-row">
                 <span class="panel-info-label">Objetivo</span>
                 <span class="panel-info-value">
@@ -1814,7 +1817,7 @@
             </div>`;
             html += `<div class="panel-info-row">
                 <span class="panel-info-label">Cargas</span>
-                <span class="panel-info-value">${Math.round((panel.cargas_hoy / objetivoActual) * 100)}%</span>
+                <span class="panel-info-value">${totalClvPanel > 0 ? Math.round((panel.cargas_hoy / totalClvPanel) * 100) : 0}%</span>
             </div>`;
             
             // Obtener asignaciones del config
@@ -1884,6 +1887,9 @@
                     totalClv += campania.cly_para_campania || 0;
                 });
                 
+                // Agregar los mensajes sin campaña al total CLY
+                totalClv += sinCampana;
+                
                 html += '</div>';
                 
                 // ✅ NUEVO: Mostrar Total CLY con comparación al objetivo
@@ -1901,9 +1907,16 @@
                 </div>`;
             } else {
                 html += '<div style="padding: 16px; color: #999; font-size: 15px;">Sin campañas con gasto</div>';
-                html += `<div class="totales-cargas progreso-inicial">
-                    📊 <span class="totales-label">Total CLY</span>: <span class="totales-valor">0/${objetivoActual}</span>
-                    <span class="totales-porcentaje">(0%)</span>
+                const totalClvSinCampanias = sinCampana;
+                const porcentajeSinCampanias = objetivoActual > 0 ? Math.round((totalClvSinCampanias / objetivoActual) * 100) : 0;
+                const claseProgresoSinCampanias = porcentajeSinCampanias >= 100 ? 'progreso-completo' : 
+                                                   porcentajeSinCampanias >= 75 ? 'progreso-alto' :
+                                                   porcentajeSinCampanias >= 50 ? 'progreso-medio' :
+                                                   porcentajeSinCampanias >= 25 ? 'progreso-bajo' :
+                                                   'progreso-inicial';
+                html += `<div class="totales-cargas ${claseProgresoSinCampanias}">
+                    📊 <span class="totales-label">Total CLY</span>: <span class="totales-valor">${totalClvSinCampanias}/${objetivoActual}</span>
+                    <span class="totales-porcentaje">(${porcentajeSinCampanias}%)</span>
                 </div>`;
             }
 
