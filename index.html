@@ -622,6 +622,7 @@
             border: 1px solid var(--border-color);
             transition: all 0.2s ease;
             margin-bottom: 6px;
+            width: 100%;
         }
 
         /* FONDOS SUAVES POR RANGO DE PRECIO */
@@ -666,6 +667,10 @@
             font-weight: 600;
             color: var(--text-primary);
             font-size: 18px;
+            order: -1;  /* Aparece primero */
+            width: 100%;  /* Ocupa toda la línea */
+            margin-bottom: 4px;  /* Espacio entre nombre y stats */
+            text-align: right;  /* Alineado a la derecha */
         }
 
         .campaign-bar-stats {
