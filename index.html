@@ -1657,6 +1657,12 @@
                 const panelId = btn.getAttribute('data-panel-id');
                 const letra = btn.getAttribute('data-campania');
                 
+                // Obtener el nombre del panel desde el header
+                const panelDiv = document.querySelector(`[data-panel-id="${panelId}"]`);
+                const headerText = panelDiv?.querySelector('.panel-info-header')?.textContent || '';
+                const panelMatch = headerText.match(/▶\s+(\w+)\s+CODIGO/);
+                const panelName = panelMatch ? panelMatch[1].toLowerCase() : 'unknown';
+                
                 // Confirmar antes de resetear
                 if (!confirm(`¿Resetear asignaciones de ${letra} a 0?`)) {
                     return;
@@ -1668,6 +1674,7 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             panel_id: panelId,
+                            panel_nombre: panelName,
                             campania: letra,
                             cantidad_asignada: 0,
                             asignacion_automatica: false
@@ -1681,6 +1688,9 @@
                             // Recargar datos
                             setTimeout(() => cargarDatos(), 500);
                         }
+                    } else {
+                        console.error(`❌ Error 400: Revisar payload`);
+                        alert('Error al resetear. Verifica la consola.');
                     }
                 } catch (error) {
                     console.error('❌ Error al resetear asignación:', error);
