@@ -2400,9 +2400,9 @@
             if (asignacionesHtml) {
               const panelIdUnique = `toggle-asignaciones-${panel.id}`;
               html += `<div style="margin-top: 8px; font-size: 10px;">
-                <button class="collapse-toggle" onclick="toggleCollapse('${panelIdUnique}')" style="font-size: 10px;">▼ Asignados (${totalAsignados})</button>
+                <button class="collapse-toggle" onclick="toggleCollapse('${panelIdUnique}')" style="font-size: 10px;">▶ Asignados (${totalAsignados})</button>
               </div>`;
-              html += `<div id="${panelIdUnique}" class="collapse-content asignaciones-list-compact">
+              html += `<div id="${panelIdUnique}" class="collapse-content asignaciones-list-compact collapsed">
                 ${asignacionesHtml}
               </div>`;
             }
@@ -2706,6 +2706,19 @@
             exportBtn.textContent = '📥 Generando...';
 
             try {
+                // ✅ Cerrar todos los desplegables antes de descargar
+                const allCollapsibles = document.querySelectorAll('[id^="toggle-asignaciones-"]');
+                allCollapsibles.forEach(el => {
+                    if (!el.classList.contains('collapsed')) {
+                        // Si está abierto, cerrarlo
+                        const panelIdUnique = el.id;
+                        toggleCollapse(panelIdUnique);
+                    }
+                });
+
+                // Pequeño delay para que el DOM se actualice
+                await new Promise(resolve => setTimeout(resolve, 200));
+
                 const element = document.getElementById('content');
                 const canvas = await html2canvas(element, {
                     scale: 2,
@@ -2733,6 +2746,16 @@
             } finally {
                 exportBtn.disabled = false;
                 exportBtn.textContent = '📥 Descargar PNG';
+                
+                // ✅ Reabre todos los desplegables después de descargar
+                const allCollapsibles = document.querySelectorAll('[id^="toggle-asignaciones-"]');
+                allCollapsibles.forEach(el => {
+                    if (el.classList.contains('collapsed')) {
+                        // Si está cerrado, reabrirlo
+                        const panelIdUnique = el.id;
+                        toggleCollapse(panelIdUnique);
+                    }
+                });
             }
         }
 
