@@ -205,15 +205,17 @@
             display: flex;
             justify-content: flex-start;
             font-size: 12px;
-            margin-bottom: 5px;
-            padding: 5px 0;
-            gap: 8px;
+            margin-bottom: 3px;
+            padding: 2px 0;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
         .panel-info-label {
             color: var(--text-secondary);
             font-weight: 600;
-            min-width: 80px;
+            min-width: auto;
         }
 
         .panel-info-value {
@@ -603,47 +605,88 @@
         .campaigns-list {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 0px;
             align-items: flex-end;
         }
 
         .campaign-bar {
             background: var(--bg-secondary);
-            padding: 5px 8px;
-            border-radius: 3px;
+            padding: 1px 3px;
+            border-radius: 2px;
             color: var(--text-primary);
             font-size: 11px;
             font-weight: 500;
             display: flex;
             justify-content: flex-end;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 6px;
-            border: 1px solid var(--border-color);
+            flex-wrap: nowrap;
+            gap: 2px;
+            border: 2px solid var(--border-color);
             transition: all 0.2s ease;
-            margin-bottom: 5px;
+            margin-bottom: 0px;
             width: 100%;
         }
 
         /* FONDOS SUAVES POR RANGO DE PRECIO */
         .campaign-bar.campania-fondo-verde {
-            background: #d5f4e6;
-            border-color: #a9dcc8;
+            background: #b3ead5;
+            border-color: #27ae60;
         }
 
         .campaign-bar.campania-fondo-amarillo {
-            background: #fef5e7;
-            border-color: #f9e79f;
+            background: #fffacc;
+            border-color: #f1c40f;
         }
 
         .campaign-bar.campania-fondo-naranja {
-            background: #fdebd0;
-            border-color: #f8b88b;
+            background: #ffdab0;
+            border-color: #e67e22;
         }
 
         .campaign-bar.campania-fondo-rojo {
-            background: #fadbd8;
-            border-color: #f5b7b1;
+            background: #ffb8b8;
+            border-color: #e74c3c;
+        }
+
+        /* COLORES APAGADOS PARA LOS CUADRADITOS DE PRECIO EN PAUSADAS */
+        .campaign-bar.campaign-bar-paused .precio-verde {
+            background: #b8d9c9 !important;
+            color: #5a8a6a !important;
+            box-shadow: none !important;
+        }
+
+        .campaign-bar.campaign-bar-paused .precio-verde .campaign-stat-value {
+            color: #5a8a6a !important;
+        }
+
+        .campaign-bar.campaign-bar-paused .precio-amarillo {
+            background: #ddd4b8 !important;
+            color: #9d8a5a !important;
+            box-shadow: none !important;
+        }
+
+        .campaign-bar.campaign-bar-paused .precio-amarillo .campaign-stat-value {
+            color: #9d8a5a !important;
+        }
+
+        .campaign-bar.campaign-bar-paused .precio-naranja {
+            background: #d9c9b0 !important;
+            color: #a67a4a !important;
+            box-shadow: none !important;
+        }
+
+        .campaign-bar.campaign-bar-paused .precio-naranja .campaign-stat-value {
+            color: #a67a4a !important;
+        }
+
+        .campaign-bar.campaign-bar-paused .precio-rojo {
+            background: #d9b8b0 !important;
+            color: #a25a52 !important;
+            box-shadow: none !important;
+        }
+
+        .campaign-bar.campaign-bar-paused .precio-rojo .campaign-stat-value {
+            color: #a25a52 !important;
         }
 
         .campaign-bar:hover {
@@ -652,8 +695,8 @@
 
         /* CAMPAÑA PAUSADA - ESTILO GRIS */
         .campaign-bar.campaign-bar-paused {
-            background: #e8e8e8 !important;
-            border-color: #bbb !important;
+            background: #d0d0d0 !important;
+            border-color: #95a5a6 !important;
         }
 
         .campaign-bar.campaign-bar-paused .campaign-bar-name,
@@ -663,19 +706,20 @@
         }
 
         .campaign-bar-name {
-            min-width: 180px;
+            min-width: auto;
             font-weight: 600;
             color: var(--text-primary);
-            font-size: 18px;
+            font-size: 15px;
             order: -1;  /* Aparece primero */
-            width: 100%;  /* Ocupa toda la línea */
-            margin-bottom: 4px;  /* Espacio entre nombre y stats */
-            text-align: left;  /* Alineado a la izquierda */
+            width: auto;
+            margin-bottom: 0;
+            text-align: left;
+            margin-right: 4px;
         }
 
         .campaign-bar-stats {
             display: flex;
-            gap: 6px;
+            gap: 1px;
             align-items: center;
             font-size: 11px;
         }
@@ -684,16 +728,16 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 1px;
-            padding: 2px 5px;
+            gap: 0px;
+            padding: 0px 2px;
             border-radius: 2px;
             background: transparent;
         }
 
         .campaign-stat-item.asignar-input {
             flex-direction: row;
-            gap: 3px;
-            padding: 3px;
+            gap: 2px;
+            padding: 2px;
             background: rgba(41, 128, 185, 0.08);
             border-radius: 2px;
             border: 1px solid rgba(41, 128, 185, 0.2);
@@ -852,7 +896,7 @@
 
         .campaign-stat-label {
             color: var(--text-secondary);
-            font-size: 10px;
+            font-size: 8px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.3px;
@@ -861,7 +905,7 @@
         .campaign-stat-value {
             font-weight: 700;
             color: var(--text-primary);
-            font-size: 13px;
+            font-size: 10px;
         }
 
         /* CLY con brillo sutil de fondo */
@@ -877,6 +921,18 @@
             padding: 4px 8px;
             border-radius: 3px;
             display: inline-block;
+        }
+
+        /* CARGAS con estilo similar a CLY */
+        .campaign-bar-stats .campaign-stat-item:nth-child(5) .campaign-stat-label {
+            color: var(--text-primary);
+            font-weight: 800;
+        }
+
+        .campaign-bar-stats .campaign-stat-item:nth-child(5) .campaign-stat-value {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-primary);
         }
 
         /* SISTEMA DE COLORES POR RANGO DE PRECIO CPM */
@@ -2320,11 +2376,6 @@
             
             html += '<div class="panel-info">';
             html += `<div class="panel-info-header">▶ ${panel.panel.toUpperCase()} CODIGO: ${panel.id}</div>`;
-            html += `<div class="panel-info-row">
-                <span class="panel-info-label">FB</span>
-                <span class="panel-info-value">${usuarioPanel}</span>
-            </div>`;
-            
             // ✅ Obtener objetivo de la configuración
             const sinCampana = panel.campañas?.SIN_CAMPAÑA?.mensajes || 0;
             const panelNorm = normalizarNombre(panel.panel);
@@ -2341,13 +2392,14 @@
             // Calcular total CLY para este panel (incluyendo sin campaña)
             const totalClvPanel = campanias.reduce((sum, camp) => sum + (camp.cly_para_campania || 0), 0) + sinCampana;
             
+            // 📊 Una sola línea con FB, Objetivo y Cargas
             html += `<div class="panel-info-row">
+                <span class="panel-info-label">FB</span>
+                <span class="panel-info-value">${usuarioPanel}</span>
                 <span class="panel-info-label">Objetivo</span>
                 <span class="panel-info-value">
                     ${panel.total_mensajes_hoy}/<input type="number" class="input-objetivo" data-panel-id="${panel.id}" value="${objetivoActual}" min="1" max="10000" style="width: 50px; padding: 2px 4px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px;">
                 </span>
-            </div>`;
-            html += `<div class="panel-info-row">
                 <span class="panel-info-label">Cargas</span>
                 <span class="panel-info-value">${totalClvPanel > 0 ? Math.round((panel.cargas_hoy / totalClvPanel) * 100) : 0}%</span>
             </div>`;
