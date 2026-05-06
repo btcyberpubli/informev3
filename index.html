@@ -376,6 +376,121 @@
             box-shadow: 0 2px 8px rgba(231, 76, 60, 0.15);
         }
 
+        /* ===== ALERTAS WHATSAPP ===== */
+        .whatsapp-alerts-container {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px var(--shadow-light);
+            border-top: 3px solid #e74c3c;
+        }
+
+        .whatsapp-alerts-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e74c3c;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .whatsapp-alerts-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .whatsapp-alert-item {
+            background: linear-gradient(135deg, #fadbd8 0%, #f5b7b1 100%);
+            border: 1px solid #e74c3c;
+            border-left: 4px solid #c0392b;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(231, 76, 60, 0.1);
+        }
+
+        body.dark-mode .whatsapp-alert-item {
+            background: linear-gradient(135deg, #5d4037 0%, #3e2723 100%);
+            border-color: #d32f2f;
+        }
+
+        .whatsapp-alert-content {
+            flex: 1;
+        }
+
+        .whatsapp-alert-contact {
+            font-weight: 700;
+            color: #c0392b;
+            font-size: 13px;
+            margin-bottom: 3px;
+        }
+
+        body.dark-mode .whatsapp-alert-contact {
+            color: #ef5350;
+        }
+
+        .whatsapp-alert-message {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 3px;
+            font-style: italic;
+        }
+
+        .whatsapp-alert-time {
+            font-size: 10px;
+            color: #7f8c8d;
+        }
+
+        body.dark-mode .whatsapp-alert-time {
+            color: #9e9e9e;
+        }
+
+        .whatsapp-alert-actions {
+            display: flex;
+            gap: 5px;
+            margin-left: 10px;
+        }
+
+        .btn-resolve-alert {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-resolve-alert:hover {
+            background: #229954;
+            transform: translateY(-1px);
+        }
+
+        .whatsapp-no-alerts {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
         .asignaciones-list {
             margin-top: 3px;
             padding: 2px 0;
@@ -1698,6 +1813,15 @@
         <div id="successMsg" class="success"></div>
         <div id="timestampBox" class="timestamp-box" style="display: none;"></div>
 
+        <!-- ✅ NUEVO: Sección de Alertas WhatsApp -->
+        <div id="whatsappAlertsSection" class="whatsapp-alerts-container" style="display: none;">
+            <div class="whatsapp-alerts-title">
+                📱 Alertas WhatsApp
+                <span class="whatsapp-alerts-badge" id="alertsCount">0</span>
+            </div>
+            <div id="whatsappAlertsList"></div>
+        </div>
+
         <div id="content">
             <div class="loading">⏳ Cargando datos...</div>
         </div>
@@ -1786,6 +1910,9 @@
                 renderizarDashboard();
                 mostrarUltimaActualizacion();
                 iniciarAutoRefresh();
+                
+                // ✅ NUEVO: Cargar alertas de WhatsApp después de renderizar dashboard
+                cargarAlertasWhatsApp();
                 
             } catch (error) {
                 console.error('Error:', error);
@@ -2993,6 +3120,101 @@
     </div>
 
     <script>
+        // ✅ NUEVO: Funciones para Alertas de WhatsApp
+        async function cargarAlertasWhatsApp() {
+            try {
+                const response = await fetch('https://accountant-services.co.uk/api/whatsapp-alerts');
+                const data = await response.json();
+
+                if (!data.success) {
+                    console.warn('⚠️ Error cargando alertas:', data.error);
+                    return;
+                }
+
+                const alerts = data.alerts || [];
+                const activeAlerts = alerts.filter(a => a.status === 'active');
+
+                // Mostrar/ocultar sección según si hay alertas
+                const section = document.getElementById('whatsappAlertsSection');
+                const listDiv = document.getElementById('whatsappAlertsList');
+                const badge = document.getElementById('alertsCount');
+
+                if (activeAlerts.length === 0) {
+                    section.style.display = 'none';
+                    return;
+                }
+
+                section.style.display = 'block';
+                badge.textContent = activeAlerts.length;
+
+                // Renderizar alertas
+                let html = '';
+                activeAlerts.forEach((alert) => {
+                    const timeAgo = getTimeAgo(new Date(alert.detectedAt));
+                    html += `
+                        <div class="whatsapp-alert-item">
+                            <div class="whatsapp-alert-content">
+                                <div class="whatsapp-alert-contact">
+                                    📱 ${alert.contactName}
+                                </div>
+                                <div class="whatsapp-alert-message">
+                                    "${alert.lastMessage}"
+                                </div>
+                                <div class="whatsapp-alert-time">
+                                    Detectada hace ${timeAgo}
+                                </div>
+                            </div>
+                            <div class="whatsapp-alert-actions">
+                                <button class="btn-resolve-alert" onclick="resolverAlerta('${alert.id}')">
+                                    ✓ Resolver
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                listDiv.innerHTML = html;
+                console.log(`✅ Alertas WhatsApp cargadas: ${activeAlerts.length}`);
+
+            } catch (error) {
+                console.error('❌ Error cargando alertas de WhatsApp:', error);
+            }
+        }
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return `${seconds}s`;
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
+            return `${Math.floor(seconds / 86400)}d`;
+        }
+
+        async function resolverAlerta(alertId) {
+            try {
+                const response = await fetch(`https://accountant-services.co.uk/api/whatsapp-alert/${alertId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'resolved' })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    console.log(`✅ Alerta resuelta: ${alertId}`);
+                    cargarAlertasWhatsApp(); // Recargar alertas
+                } else {
+                    alert('❌ Error al resolver la alerta');
+                }
+            } catch (error) {
+                console.error('❌ Error resolviendo alerta:', error);
+                alert('Error al resolver la alerta');
+            }
+        }
+
+        // Cargar alertas inicialmente y cada 15 segundos
+        cargarAlertasWhatsApp();
+        setInterval(cargarAlertasWhatsApp, 15000);
+
         function abrirModalCreativo(campania) {
             const imagenUrl = campania.imagenes?.image_url || campania.imagenes?.thumbnail_url || '';
             
