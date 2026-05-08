@@ -3123,58 +3123,105 @@
         // ✅ NUEVO: Funciones para Alertas de WhatsApp
         async function cargarAlertasWhatsApp() {
             try {
-                const response = await fetch('https://accountant-services.co.uk/api/whatsapp-alerts');
-                const data = await response.json();
-
-                if (!data.success) {
-                    console.warn('⚠️ Error cargando alertas:', data.error);
-                    return;
+                // 🔄 Intenta desde HTTPS primero (VPS), si no desde localhost
+                let allItems = [];
+                
+                try {
+                    const response = await fetch('https://accountant-services.co.uk/api/whatsapp-alerts');
+                    if (!response.ok) throw new Error('Fallo VPS');
+                    allItems = await response.json();
+                } catch (vpsError) {
+                    console.warn('⚠️ VPS no disponible, intentando localhost...');
+                    try {
+                        const response = await fetch('http://localhost:3010/api/whatsapp-alerts');
+                        if (!response.ok) throw new Error('Fallo localhost');
+                        allItems = await response.json();
+                    } catch (localError) {
+                        console.warn('⚠️ Localhost tampoco disponible');
+                        return;
+                    }
                 }
 
-                const alerts = data.alerts || [];
-                const activeAlerts = alerts.filter(a => a.status === 'active');
+                // Separar alertas (caídas) de confirmaciones (líneas bien controladas)
+                const alertas = Array.isArray(allItems) ? allItems.filter(item => item.type === 'whatsapp-downline' || !item.type) : [];
+                const confirmaciones = Array.isArray(allItems) ? allItems.filter(item => item.type === 'whatsapp-cycle-ok') : [];
 
-                // Mostrar/ocultar sección según si hay alertas
+                const activeAlerts = alertas.filter(a => a.status === 'active' || !a.status);
+
+                // Mostrar/ocultar sección según si hay alertas O confirmaciones recientes
                 const section = document.getElementById('whatsappAlertsSection');
                 const listDiv = document.getElementById('whatsappAlertsList');
                 const badge = document.getElementById('alertsCount');
 
-                if (activeAlerts.length === 0) {
+                if (activeAlerts.length === 0 && confirmaciones.length === 0) {
                     section.style.display = 'none';
                     return;
                 }
 
                 section.style.display = 'block';
-                badge.textContent = activeAlerts.length;
+                badge.textContent = activeAlerts.length > 0 ? activeAlerts.length : '✓';
 
-                // Renderizar alertas
+                // Renderizar alertas y confirmaciones
                 let html = '';
-                activeAlerts.forEach((alert) => {
-                    const timeAgo = getTimeAgo(new Date(alert.detectedAt));
-                    html += `
-                        <div class="whatsapp-alert-item">
-                            <div class="whatsapp-alert-content">
-                                <div class="whatsapp-alert-contact">
-                                    📱 ${alert.contactName}
+
+                // 🔴 SECCIÓN 1: Alertas de caídas (lo importante)
+                if (activeAlerts.length > 0) {
+                    html += '<div class="whatsapp-subsection" style="margin-bottom: 16px;">';
+                    html += `<div style="font-size: 12px; font-weight: 700; color: #e74c3c; margin-bottom: 8px;">🔴 LÍNEAS SIN RESPUESTA (${activeAlerts.length})</div>`;
+                    activeAlerts.forEach((alert) => {
+                        const timeAgo = getTimeAgo(new Date(alert.detectedAt || alert.receivedAt));
+                        html += `
+                            <div class="whatsapp-alert-item">
+                                <div class="whatsapp-alert-content">
+                                    <div class="whatsapp-alert-contact">
+                                        📱 ${alert.contactName}
+                                    </div>
+                                    <div class="whatsapp-alert-message">
+                                        "${alert.lastMessage || 'Sin mensaje registrado'}"
+                                    </div>
+                                    <div class="whatsapp-alert-time">
+                                        Detectada hace ${timeAgo}
+                                    </div>
                                 </div>
-                                <div class="whatsapp-alert-message">
-                                    "${alert.lastMessage}"
-                                </div>
-                                <div class="whatsapp-alert-time">
-                                    Detectada hace ${timeAgo}
+                                <div class="whatsapp-alert-actions">
+                                    <button class="btn-resolve-alert" onclick="resolverAlerta('${alert.id}')">
+                                        ✓ Resolver
+                                    </button>
                                 </div>
                             </div>
-                            <div class="whatsapp-alert-actions">
-                                <button class="btn-resolve-alert" onclick="resolverAlerta('${alert.id}')">
-                                    ✓ Resolver
-                                </button>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                // ✅ SECCIÓN 2: Confirmaciones de ciclos completados exitosamente
+                if (confirmaciones.length > 0) {
+                    const ultimasConfirmaciones = confirmaciones.slice(-5).reverse();
+                    html += '<div class="whatsapp-subsection">';
+                    html += `<div style="font-size: 12px; font-weight: 700; color: #27ae60; margin-bottom: 8px;">✅ CICLOS COMPLETADOS (Últimos ${ultimasConfirmaciones.length})</div>`;
+                    ultimasConfirmaciones.forEach((conf) => {
+                        const timeAgo = getTimeAgo(new Date(conf.detectedAt || conf.receivedAt));
+                        html += `
+                            <div class="whatsapp-confirmation-item" style="background: linear-gradient(135deg, #d5f4e6, #a9dfbf); border-left: 4px solid #27ae60; padding: 8px; border-radius: 4px; margin-bottom: 8px;">
+                                <div class="whatsapp-alert-content">
+                                    <div class="whatsapp-alert-contact" style="color: #27ae60;">
+                                        ✓ ${conf.contactName}
+                                    </div>
+                                    <div class="whatsapp-alert-message" style="color: #145a32; font-size: 10px;">
+                                        Procesamiento automático completado sin problemas
+                                    </div>
+                                    <div class="whatsapp-alert-time" style="font-size: 9px;">
+                                        ${timeAgo}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    `;
-                });
+                        `;
+                    });
+                    html += '</div>';
+                }
 
                 listDiv.innerHTML = html;
-                console.log(`✅ Alertas WhatsApp cargadas: ${activeAlerts.length}`);
+                console.log(`✅ Alertas WhatsApp cargadas: ${activeAlerts.length} caídas, ${confirmaciones.length} controladas`);
 
             } catch (error) {
                 console.error('❌ Error cargando alertas de WhatsApp:', error);
