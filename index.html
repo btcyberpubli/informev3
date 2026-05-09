@@ -3206,7 +3206,9 @@
                     html += '<div class="whatsapp-subsection">';
                     html += `<div style="font-size: 12px; font-weight: 700; color: #27ae60; margin-bottom: 8px;">✅ ÚLTIMO CICLO COMPLETADO</div>`;
                     ultimasConfirmaciones.forEach((conf) => {
-                        const timeAgo = getTimeAgo(new Date(conf.detectedAt || conf.receivedAt));
+                        const fecha = new Date(conf.detectedAt || conf.receivedAt);
+                        const horaFormato = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                        const timeAgo = getTimeAgo(fecha);
                         html += `
                             <div class="whatsapp-confirmation-item" style="background: linear-gradient(135deg, #d5f4e6, #a9dfbf); border-left: 4px solid #27ae60; padding: 8px; border-radius: 4px; margin-bottom: 8px;">
                                 <div class="whatsapp-alert-content">
@@ -3216,8 +3218,11 @@
                                     <div class="whatsapp-alert-message" style="color: #145a32; font-size: 10px;">
                                         Procesamiento automático completado sin problemas
                                     </div>
-                                    <div class="whatsapp-alert-time" style="font-size: 9px;">
-                                        ${timeAgo}
+                                    <div class="whatsapp-alert-time" style="font-size: 11px; font-weight: 600;">
+                                        🕐 ${horaFormato}
+                                    </div>
+                                    <div class="whatsapp-alert-time" style="font-size: 9px; color: #27ae60;">
+                                        (${timeAgo})
                                     </div>
                                 </div>
                             </div>
