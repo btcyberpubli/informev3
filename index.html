@@ -3202,9 +3202,9 @@
 
                 // ✅ SECCIÓN 2: Confirmaciones de ciclos completados exitosamente
                 if (confirmaciones.length > 0) {
-                    const ultimasConfirmaciones = confirmaciones.slice(-5).reverse();
+                    const ultimasConfirmaciones = confirmaciones.slice(-1).reverse();
                     html += '<div class="whatsapp-subsection">';
-                    html += `<div style="font-size: 12px; font-weight: 700; color: #27ae60; margin-bottom: 8px;">✅ CICLOS COMPLETADOS (Últimos ${ultimasConfirmaciones.length})</div>`;
+                    html += `<div style="font-size: 12px; font-weight: 700; color: #27ae60; margin-bottom: 8px;">✅ ÚLTIMO CICLO COMPLETADO</div>`;
                     ultimasConfirmaciones.forEach((conf) => {
                         const timeAgo = getTimeAgo(new Date(conf.detectedAt || conf.receivedAt));
                         html += `
