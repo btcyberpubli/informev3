@@ -3204,27 +3204,13 @@
                 if (confirmaciones.length > 0) {
                     const ultimasConfirmaciones = confirmaciones.slice(-1).reverse();
                     html += '<div class="whatsapp-subsection">';
-                    html += `<div style="font-size: 12px; font-weight: 700; color: #27ae60; margin-bottom: 8px;">✅ ÚLTIMO CICLO COMPLETADO</div>`;
                     ultimasConfirmaciones.forEach((conf) => {
                         const fecha = new Date(conf.detectedAt || conf.receivedAt);
-                        const horaFormato = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                        const timeAgo = getTimeAgo(fecha);
+                        const horaFormato = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
                         html += `
-                            <div class="whatsapp-confirmation-item" style="background: linear-gradient(135deg, #d5f4e6, #a9dfbf); border-left: 4px solid #27ae60; padding: 8px; border-radius: 4px; margin-bottom: 8px;">
-                                <div class="whatsapp-alert-content">
-                                    <div class="whatsapp-alert-contact" style="color: #27ae60;">
-                                        ✓ ${conf.contactName}
-                                    </div>
-                                    <div class="whatsapp-alert-message" style="color: #145a32; font-size: 10px;">
-                                        Procesamiento automático completado sin problemas
-                                    </div>
-                                    <div class="whatsapp-alert-time" style="font-size: 11px; font-weight: 600;">
-                                        🕐 ${horaFormato}
-                                    </div>
-                                    <div class="whatsapp-alert-time" style="font-size: 9px; color: #27ae60;">
-                                        (${timeAgo})
-                                    </div>
-                                </div>
+                            <div style="background: rgba(39, 174, 96, 0.15); border-left: 2px solid #27ae60; padding: 4px 6px; border-radius: 3px; font-size: 10px; color: #27ae60; display: flex; justify-content: space-between; align-items: center;">
+                                <span>✅ Último ciclo: ${conf.contactName}</span>
+                                <span style="font-weight: 600;">🕐 ${horaFormato}</span>
                             </div>
                         `;
                     });
