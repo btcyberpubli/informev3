@@ -2480,6 +2480,10 @@
         }
 
         /**
+         * Renderizar campañas de Meta directamente sin depender de Clientify
+         * Muestra campañas agrupadas por usuario (dueño de cuenta Meta)
+         */
+        function renderizarCampaniasMetaDirectas() {
             const campaniasMetaAds = datosGlobales.campaniasMetaAds?.datos || [];
             
             if (!campaniasMetaAds || campaniasMetaAds.length === 0) {
