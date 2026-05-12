@@ -1861,15 +1861,14 @@
             if (!data.success) {
                 throw new Error("❌ Respuesta con success = false");
             }
-            if (!data.reportePaneles || !Array.isArray(data.reportePaneles)) {
-                throw new Error("❌ reportePaneles ausente o inválido");
+            // ✅ CAMBIO: Permitir reportePaneles vacío (solo Meta cuando no hay Clientify)
+            if (!Array.isArray(data.reportePaneles)) {
+                throw new Error("❌ reportePaneles debe ser un array");
             }
             if (!data.campaniasMetaAds || !data.campaniasMetaAds.datos) {
                 throw new Error("❌ campaniasMetaAds.datos ausente");
             }
-            if (!data.horariosMetaAds) {
-                throw new Error("❌ horariosMetaAds ausente");
-            }
+            // ✅ CAMBIO: horariosMetaAds no es requerido, usar fecha actual si no existe
             return true;
         }
 
@@ -1992,7 +1991,13 @@
             document.getElementById('timestamp').textContent = `Fecha: ${timestamp}`;
 
             let html = '';
-            html += renderizarInformePaneles();
+            // ✅ CAMBIO: Solo mostrar paneles si hay datos de Clientify
+            if (datosGlobales.reportePaneles && datosGlobales.reportePaneles.length > 0) {
+                html += renderizarInformePaneles();
+            } else {
+                // ✅ NUEVO: Mostrar campañas de Meta cuando no hay Clientify
+                html += renderizarCampaniasMetaDirectas();
+            }
             html += renderizarTablaSaldos();
 
             document.getElementById('content').innerHTML = html;
@@ -2352,9 +2357,111 @@
             });
         }
 
+        /**
+         * Renderizar campañas de Meta directamente sin depender de Clientify
+         * Muestra campañas agrupadas por usuario (dueño de cuenta Meta)
+         */
+        function renderizarCampaniasMetaDirectas() {
+            const campaniasMetaAds = datosGlobales.campaniasMetaAds?.datos || [];
+            
+            if (!campaniasMetaAds || campaniasMetaAds.length === 0) {
+                return '';
+            }
+
+            let html = '<div class="section">';
+            html += '<div class="section-title">📊 Campañas Meta Ads</div>';
+            html += '<div class="panels-container">';
+
+            campaniasMetaAds.forEach(usuario => {
+                const nombreUsuario = usuario.nombre;
+                const cuentas = usuario.cuentas || [];
+
+                cuentas.forEach(cuenta => {
+                    const campanias = cuenta.campanias || [];
+
+                    const campaniasFiltradas = campanias.filter(c => {
+                        const gasto = parseFloat(c.metricas_diarias?.spend || 0);
+                        return gasto > 0;
+                    });
+
+                    if (campaniasFiltradas.length === 0) return;
+
+                    html += '<div class="panel-section" style="grid-template-columns: 1fr;">';
+                    html += '<div class="panel-info">';
+                    html += '<div class="panel-info-header">👤 ' + nombreUsuario + ' - Cuenta: ' + cuenta.id + '</div>';
+                    html += '</div>';
+                    html += '<div>';
+                    html += '<div class="campaigns-list">';
+
+                    let totalGasto = 0;
+                    let totalMensajes = 0;
+
+                    campaniasFiltradas.forEach(campania => {
+                        const metricas = campania.metricas_diarias || {};
+                        const gasto = parseFloat(metricas.spend || 0);
+                        const mensajes = metricas.messages || 0;
+                        const costoPorMensaje = mensajes > 0 ? gasto / mensajes : 0;
+                        const estado = campania.estado === 'ACTIVE' ? 'Activa' : 'Pausada';
+
+                        totalGasto += gasto;
+                        totalMensajes += mensajes;
+
+                        const colorClass = getColorClassForPrice(costoPorMensaje);
+                        const bgClass = getBackgroundClassForPrice(costoPorMensaje);
+                        const isPaused = campania.estado !== 'ACTIVE';
+                        const pausedClass = isPaused ? 'campaign-bar-paused' : '';
+
+                        html += '<div class="campaign-bar ' + bgClass + ' ' + pausedClass + '">'
+                               + '<span class="campaign-bar-name">' + campania.nombre + '</span>'
+                               + '<div class="campaign-bar-stats">'
+                               + '<div class="campaign-stat-item">'
+                               + '<span class="campaign-stat-label">Gasto</span>'
+                               + '<span class="campaign-stat-value">$' + gasto.toFixed(2) + '</span>'
+                               + '</div>'
+                               + '<div class="campaign-stat-item">'
+                               + '<span class="campaign-stat-label">Mensajes</span>'
+                               + '<span class="campaign-stat-value">' + mensajes + '</span>'
+                               + '</div>'
+                               + '<div class="campaign-stat-item ' + colorClass + '">'
+                               + '<span class="campaign-stat-label">$ / Msg</span>'
+                               + '<span class="campaign-stat-value">$' + costoPorMensaje.toFixed(2) + '</span>'
+                               + '</div>'
+                               + '<div class="campaign-stat-item">'
+                               + '<span class="campaign-stat-label">Estado</span>'
+                               + '<span class="campaign-stat-value ' + (estado === 'Activa' ? 'estado-activo' : 'estado-pausado') + '">' + estado + '</span>'
+                               + '</div>'
+                               + '</div>'
+                               + '</div>';
+                    });
+
+                    html += '</div>';
+
+                    if (campaniasFiltradas.length > 0) {
+                        const costoPorMensajePromedio = totalMensajes > 0 ? totalGasto / totalMensajes : 0;
+                        const claseProgreso = costoPorMensajePromedio < 0.5 ? 'progreso-completo' : 
+                                            costoPorMensajePromedio < 1.0 ? 'progreso-alto' :
+                                            costoPorMensajePromedio < 1.5 ? 'progreso-medio' : 'progreso-bajo';
+                        
+                        html += '<div class="totales-cargas ' + claseProgreso + '">'
+                               + '💰 <span class="totales-label">Gasto Total</span>: <span class="totales-valor">$' + totalGasto.toFixed(2) + '</span>'
+                               + ' | 📨 <span class="totales-label">Mensajes</span>: <span class="totales-valor">' + totalMensajes + '</span>'
+                               + ' | 📊 <span class="totales-label">Promedio</span>: <span class="totales-valor">$' + costoPorMensajePromedio.toFixed(2) + '</span>'
+                               + '</div>';
+                    }
+
+                    html += '</div>';
+                    html += '</div>';
+                });
+            });
+
+            html += '</div></div>';
+            return html;
+        }
+
         function renderizarInformePaneles() {
+            // ✅ CAMBIO: Retornar vacío en lugar de error cuando no hay paneles
             if (!datosGlobales.reportePaneles || datosGlobales.reportePaneles.length === 0) {
-                return '<div class="section"><p class="error">❌ No hay datos de paneles disponibles</p></div>';
+                return '';
             }
 
             let html = '<div class="section">';
@@ -2381,6 +2488,8 @@
         /**
          * Enriquecer campañas con datos de reportePaneles
          * ✅ FIX: Evitar mapeos múltiples - cada campaña se mapea a UN ÚNICO panel
+         * ✅ Funciona incluso cuando reportePaneles está vacío
+         */
          */
         function agruparCampaniasPorPanelConUsuario() {
             const mapeo = {};
@@ -2715,7 +2824,9 @@
             const cargas = campania.cargas_para_campania || 0;
             
             // Costo por mensaje = gasto / CLY (NO sobre Ads)
-            const costoPorMensaje = clv > 0 ? gasto / clv : 0;
+            // Si no hay CLY (Clientify vacío), usar Ads como fallback
+            const denominadorCosto = clv > 0 ? clv : ads > 0 ? ads : 1;
+            const costoPorMensaje = gasto / denominadorCosto;
             const costoPorMensajeStr = costoPorMensaje.toFixed(2);
 
             const colorClass = getColorClassForPrice(costoPorMensaje);
@@ -2812,7 +2923,8 @@
         }
 
         function renderizarTablaSaldos() {
-            if (!datosGlobales.reportePaneles || !datosGlobales.campaniasMetaAds?.datos) {
+            // ✅ CAMBIO: Solo requiere datos de Meta, permite reportePaneles vacío
+            if (!datosGlobales.campaniasMetaAds?.datos) {
                 return '';
             }
 
