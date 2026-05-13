@@ -2681,7 +2681,7 @@
                                 cargas_para_campania: cargasParaCampania,
                                 fuente_origen: detectarFuenteCampania(campaniaName, panel)  // ✅ NUEVO
                             });
-                        else {
+                        } else {
                             datosGlobales.reportePaneles?.forEach(panel => {
                                 if (campaniaEncontrada) return;
                                 
@@ -2712,10 +2712,14 @@
                                         ...campania,
                                         usuario: nombreUsuario,
                                         cly_para_campania: clyParaCampania,
-                                        cargas_para_campania: cargasParaCampania
-                                    });,
+                                        cargas_para_campania: cargasParaCampania,
                                         fuente_origen: detectarFuenteCampania(campaniaName, panel)  // ✅ NUEVO
-                                    });|| 0) > 0) {
+                                    });
+                                }
+                            });
+                        }
+                        
+                        if (!campaniaEncontrada) {
                             console.warn(`⚠️ Campaña sin panel asignado: ${campania.nombre}`);
                         }
                     });
