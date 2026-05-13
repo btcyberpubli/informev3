@@ -2595,29 +2595,23 @@
 
             // ✅ NUEVO: Helper para detectar si campaña es WTK o CLY
             function detectarFuenteCampania(nombreCampania, panel) {
-                const panelOriginal = reportePanelesOriginal.find(p => 
-                    p.panel.toLowerCase() === panel.panel.toLowerCase()
-                );
-                if (!panelOriginal) return 'clientify';
-
-                // Si es una LETRA (A, B, C...) = CLY
-                const letraMatch = nombreCampania.match(/-([a-z])-/i);
+                // Si tiene LETRA (A, B, C...) dentro del nombre = CLY (Clientify)
+                const letraMatch = nombreCampania.match(/-([A-Z])-/i);
                 if (letraMatch && letraMatch[1]) {
-                    const letra = letraMatch[1].toUpperCase();
-                    if (panelOriginal.campañas && panelOriginal.campañas[letra]) {
-                        return 'clientify';
-                    }
+                    // Es una letra sola = CLY
+                    return 'CLY';
                 }
 
-                // Si es una PALABRA y existe en original = CLY
-                for (const nombreCampanaOriginal of Object.keys(panelOriginal.campañas || {})) {
-                    if (nombreCampanaOriginal !== 'SIN_CAMPAÑA' && 
-                        nombreCampania.toLowerCase().includes(nombreCampanaOriginal.toLowerCase())) {
-                        return 'clientify';
-                    }
+                // Si tiene NOMBRE completo (múltiples palabras) = WTK (Whaticket)
+                // Por ejemplo: "Invest In Gabon", "Miami Real State", etc.
+                const nombreLimpio = nombreCampania.toLowerCase().trim();
+                // Si tiene espacios en blanco y no es solo una letra = es un nombre completo
+                if (nombreLimpio.includes(' ') || nombreLimpio.length > 3) {
+                    return 'WTK';
                 }
 
-                return 'whaticket'; // No existe en original = WTK
+                // Por defecto CLY si no es identifiable
+                return 'CLY';
             }
 
             // Para cada usuario (cuenta de Meta Ads)
@@ -2664,6 +2658,8 @@
                             // Buscar datos de cargas
                             let clyParaCampania = 0;
                             let cargasParaCampania = 0;
+                            
+                            // 🔍 PASO 1: Buscar por LETRA (A, B, C...)
                             const letraMatch = campaniaName.match(/-([a-z])-/i);
                             if (letraMatch && letraMatch[1]) {
                                 const letraBuscada = letraMatch[1].toUpperCase();
@@ -2671,6 +2667,22 @@
                                     const datosLetra = panel.campañas[letraBuscada];
                                     clyParaCampania = datosLetra.mensajes || 0;
                                     cargasParaCampania = datosLetra.cargas || 0;
+                                }
+                            }
+                            
+                            // 🔍 PASO 2: Si no encontró por letra, buscar por NOMBRE (para whaticket)
+                            if (clyParaCampania === 0 && panel.campañas) {
+                                for (const [nombreCampaniaPanel, datosPanel] of Object.entries(panel.campañas)) {
+                                    // Comparar nombres ignorando mayúsculas y espacios
+                                    const nombreNormalizado = nombreCampaniaPanel.toLowerCase().trim();
+                                    const nombreEnCampania = campaniaName.toLowerCase().includes(nombreNormalizado);
+                                    const nombreEnPanel = nombreNormalizado.includes(campaniaName.toLowerCase());
+                                    
+                                    if ((nombreEnCampania || nombreEnPanel) && nombreCampaniaPanel !== 'SIN_CAMPAÑA') {
+                                        clyParaCampania = datosPanel.mensajes || 0;
+                                        cargasParaCampania = datosPanel.cargas || 0;
+                                        break;  // Usar el primer match
+                                    }
                                 }
                             }
                             
@@ -2698,6 +2710,8 @@
                                     
                                     let clyParaCampania = 0;
                                     let cargasParaCampania = 0;
+                                    
+                                    // 🔍 PASO 1: Buscar por LETRA (A, B, C...)
                                     const letraMatch = campaniaName.match(/-([a-z])-/i);
                                     if (letraMatch && letraMatch[1]) {
                                         const letraBuscada = letraMatch[1].toUpperCase();
@@ -2705,6 +2719,22 @@
                                             const datosLetra = panel.campañas[letraBuscada];
                                             clyParaCampania = datosLetra.mensajes || 0;
                                             cargasParaCampania = datosLetra.cargas || 0;
+                                        }
+                                    }
+                                    
+                                    // 🔍 PASO 2: Si no encontró por letra, buscar por NOMBRE (para whaticket)
+                                    if (clyParaCampania === 0 && panel.campañas) {
+                                        for (const [nombreCampaniaPanel, datosPanel] of Object.entries(panel.campañas)) {
+                                            // Comparar nombres ignorando mayúsculas y espacios
+                                            const nombreNormalizado = nombreCampaniaPanel.toLowerCase().trim();
+                                            const nombreEnCampania = campaniaName.toLowerCase().includes(nombreNormalizado);
+                                            const nombreEnPanel = nombreNormalizado.includes(campaniaName.toLowerCase());
+                                            
+                                            if ((nombreEnCampania || nombreEnPanel) && nombreCampaniaPanel !== 'SIN_CAMPAÑA') {
+                                                clyParaCampania = datosPanel.mensajes || 0;
+                                                cargasParaCampania = datosPanel.cargas || 0;
+                                                break;  // Usar el primer match
+                                            }
                                         }
                                     }
                                     
@@ -3019,7 +3049,7 @@
                             <span class="campaign-stat-value">${ads}</span>
                         </div>
                         <div class="campaign-stat-item">
-                            <span class="campaign-stat-label">${campania.fuente_origen === 'whaticket' ? 'WTK' : 'CLY'}</span>
+                            <span class="campaign-stat-label">${campania.fuente_origen}</span>
                             <span class="campaign-stat-value">${clv}</span>
                         </div>
                         <div class="campaign-stat-item ${colorClass}">
