@@ -2591,6 +2591,34 @@
             const usuariosPanel = {};
             const campaniasMetaAds = datosGlobales.campaniasMetaAds?.datos || [];
             const campaniasMapeadas = new Set();  // Track qué campañas ya fueron mapeadas
+            const reportePanelesOriginal = datosGlobales.reportePanelesOriginal || [];
+
+            // ✅ NUEVO: Helper para detectar si campaña es WTK o CLY
+            function detectarFuenteCampania(nombreCampania, panel) {
+                const panelOriginal = reportePanelesOriginal.find(p => 
+                    p.panel.toLowerCase() === panel.panel.toLowerCase()
+                );
+                if (!panelOriginal) return 'clientify';
+
+                // Si es una LETRA (A, B, C...) = CLY
+                const letraMatch = nombreCampania.match(/-([a-z])-/i);
+                if (letraMatch && letraMatch[1]) {
+                    const letra = letraMatch[1].toUpperCase();
+                    if (panelOriginal.campañas && panelOriginal.campañas[letra]) {
+                        return 'clientify';
+                    }
+                }
+
+                // Si es una PALABRA y existe en original = CLY
+                for (const nombreCampanaOriginal of Object.keys(panelOriginal.campañas || {})) {
+                    if (nombreCampanaOriginal !== 'SIN_CAMPAÑA' && 
+                        nombreCampania.toLowerCase().includes(nombreCampanaOriginal.toLowerCase())) {
+                        return 'clientify';
+                    }
+                }
+
+                return 'whaticket'; // No existe en original = WTK
+            }
 
             // Para cada usuario (cuenta de Meta Ads)
             campaniasMetaAds.forEach(usuario => {
@@ -2650,10 +2678,9 @@
                                 ...campania,
                                 usuario: nombreUsuario,
                                 cly_para_campania: clyParaCampania,
-                                cargas_para_campania: cargasParaCampania
+                                cargas_para_campania: cargasParaCampania,
+                                fuente_origen: detectarFuenteCampania(campaniaName, panel)  // ✅ NUEVO
                             });
-                        } 
-                        // ✅ PASO 3: Si NO hay panel explícito, intentar match por usuario
                         else {
                             datosGlobales.reportePaneles?.forEach(panel => {
                                 if (campaniaEncontrada) return;
@@ -2686,13 +2713,9 @@
                                         usuario: nombreUsuario,
                                         cly_para_campania: clyParaCampania,
                                         cargas_para_campania: cargasParaCampania
-                                    });
-                                }
-                            });
-                        }
-                        
-                        // Si no se encontró en ningún panel y tiene gasto, registrar
-                        if (!campaniaEncontrada && (campania.metricas_diarias?.spend || 0) > 0) {
+                                    });,
+                                        fuente_origen: detectarFuenteCampania(campaniaName, panel)  // ✅ NUEVO
+                                    });|| 0) > 0) {
                             console.warn(`⚠️ Campaña sin panel asignado: ${campania.nombre}`);
                         }
                     });
@@ -2992,7 +3015,7 @@
                             <span class="campaign-stat-value">${ads}</span>
                         </div>
                         <div class="campaign-stat-item">
-                            <span class="campaign-stat-label">CLY</span>
+                            <span class="campaign-stat-label">${campania.fuente_origen === 'whaticket' ? 'WTK' : 'CLY'}</span>
                             <span class="campaign-stat-value">${clv}</span>
                         </div>
                         <div class="campaign-stat-item ${colorClass}">
