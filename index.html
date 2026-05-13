@@ -2673,15 +2673,37 @@
                             // 🔍 PASO 2: Si no encontró por letra, buscar por NOMBRE (para whaticket)
                             if (clyParaCampania === 0 && panel.campañas) {
                                 for (const [nombreCampaniaPanel, datosPanel] of Object.entries(panel.campañas)) {
-                                    // Comparar nombres ignorando mayúsculas y espacios
-                                    const nombreNormalizado = nombreCampaniaPanel.toLowerCase().trim();
-                                    const nombreEnCampania = campaniaName.toLowerCase().includes(nombreNormalizado);
-                                    const nombreEnPanel = nombreNormalizado.includes(campaniaName.toLowerCase());
+                                    // Ignorar si es solo una letra (ej: "F", "A", "B")
+                                    if (nombreCampaniaPanel.length === 1 || nombreCampaniaPanel === 'SIN_CAMPAÑA') {
+                                        continue;
+                                    }
                                     
-                                    if ((nombreEnCampania || nombreEnPanel) && nombreCampaniaPanel !== 'SIN_CAMPAÑA') {
+                                    // Buscar palabras clave del nombre en la campaña Meta
+                                    const nombreNormalizado = nombreCampaniaPanel.toLowerCase().trim();
+                                    const campaniaNameNormalizado = campaniaName.toLowerCase().trim();
+                                    
+                                    // Dividir en palabras para match más preciso
+                                    const palabrasPanel = nombreNormalizado.split(/\s+/);
+                                    const palabrasCampania = campaniaNameNormalizado.split(/[\s-]+/);
+                                    
+                                    // Si al menos 2 palabras coinciden = es un match
+                                    let coincidencias = 0;
+                                    for (const palabraPanel of palabrasPanel) {
+                                        if (palabraPanel.length > 2) {  // Solo palabras > 2 caracteres
+                                            for (const palabraCampania of palabrasCampania) {
+                                                if (palabraCampania.length > 2 && palabraPanel.includes(palabraCampania)) {
+                                                    coincidencias++;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Si hay al menos 1 coincidencia de palabra significativa = match
+                                    if (coincidencias >= 1) {
                                         clyParaCampania = datosPanel.mensajes || 0;
                                         cargasParaCampania = datosPanel.cargas || 0;
-                                        break;  // Usar el primer match
+                                        break;
                                     }
                                 }
                             }
@@ -2725,15 +2747,37 @@
                                     // 🔍 PASO 2: Si no encontró por letra, buscar por NOMBRE (para whaticket)
                                     if (clyParaCampania === 0 && panel.campañas) {
                                         for (const [nombreCampaniaPanel, datosPanel] of Object.entries(panel.campañas)) {
-                                            // Comparar nombres ignorando mayúsculas y espacios
-                                            const nombreNormalizado = nombreCampaniaPanel.toLowerCase().trim();
-                                            const nombreEnCampania = campaniaName.toLowerCase().includes(nombreNormalizado);
-                                            const nombreEnPanel = nombreNormalizado.includes(campaniaName.toLowerCase());
+                                            // Ignorar si es solo una letra (ej: "F", "A", "B")
+                                            if (nombreCampaniaPanel.length === 1 || nombreCampaniaPanel === 'SIN_CAMPAÑA') {
+                                                continue;
+                                            }
                                             
-                                            if ((nombreEnCampania || nombreEnPanel) && nombreCampaniaPanel !== 'SIN_CAMPAÑA') {
+                                            // Buscar palabras clave del nombre en la campaña Meta
+                                            const nombreNormalizado = nombreCampaniaPanel.toLowerCase().trim();
+                                            const campaniaNameNormalizado = campaniaName.toLowerCase().trim();
+                                            
+                                            // Dividir en palabras para match más preciso
+                                            const palabrasPanel = nombreNormalizado.split(/\s+/);
+                                            const palabrasCampania = campaniaNameNormalizado.split(/[\s-]+/);
+                                            
+                                            // Si al menos 2 palabras coinciden = es un match
+                                            let coincidencias = 0;
+                                            for (const palabraPanel of palabrasPanel) {
+                                                if (palabraPanel.length > 2) {  // Solo palabras > 2 caracteres
+                                                    for (const palabraCampania of palabrasCampania) {
+                                                        if (palabraCampania.length > 2 && palabraPanel.includes(palabraCampania)) {
+                                                            coincidencias++;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            
+                                            // Si hay al menos 1 coincidencia de palabra significativa = match
+                                            if (coincidencias >= 1) {
                                                 clyParaCampania = datosPanel.mensajes || 0;
                                                 cargasParaCampania = datosPanel.cargas || 0;
-                                                break;  // Usar el primer match
+                                                break;
                                             }
                                         }
                                     }
