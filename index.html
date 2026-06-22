@@ -814,6 +814,41 @@
             border-color: #95a5a6 !important;
         }
 
+        .campaign-bar.campaign-bar-sin-meta {
+            border-style: dashed;
+            border-color: #f39c12;
+            background: linear-gradient(135deg, #fff7e6 0%, #ffe8c2 100%);
+        }
+
+        body.dark-mode .campaign-bar.campaign-bar-sin-meta {
+            border-color: #d68910;
+            background: linear-gradient(135deg, #5a4a2a 0%, #4a3d23 100%);
+        }
+
+        .input-gasto-sin-meta {
+            width: 78px;
+            padding: 3px 4px;
+            font-size: 10px;
+            border: 1px solid #d5b77a;
+            border-radius: 3px;
+            text-align: right;
+            font-weight: 700;
+            color: #2c3e50;
+            background: #fff;
+        }
+
+        .input-gasto-sin-meta:focus {
+            outline: none;
+            border-color: #f39c12;
+            box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.2);
+        }
+
+        body.dark-mode .input-gasto-sin-meta {
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            border-color: #9c7a35;
+        }
+
         .campaign-bar.campaign-bar-paused .campaign-bar-name,
         .campaign-bar.campaign-bar-paused .campaign-stat-label,
         .campaign-bar.campaign-bar-paused .campaign-stat-value {
@@ -1837,6 +1872,7 @@
         let datosGlobales = {};
         let ultimaActualizacion = null;
         let autoRefreshId = null;
+        const STORAGE_KEY_GASTOS_SIN_META = 'gastos_sin_meta_manual';
 
         // ========== FUNCIONES AUXILIARES ==========
 
@@ -1855,6 +1891,60 @@
                 .trim()
                 .toLowerCase()
                 .replace(/\s+/g, '');
+        }
+
+        function cargarGastosSinMeta() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY_GASTOS_SIN_META);
+                return raw ? JSON.parse(raw) : {};
+            } catch (error) {
+                console.warn('⚠️ No se pudo leer gastos manuales sin Meta:', error);
+                return {};
+            }
+        }
+
+        function guardarGastosSinMeta(data) {
+            try {
+                localStorage.setItem(STORAGE_KEY_GASTOS_SIN_META, JSON.stringify(data));
+            } catch (error) {
+                console.warn('⚠️ No se pudo guardar gastos manuales sin Meta:', error);
+            }
+        }
+
+        function obtenerGastoManualSinMeta(panelId, campaniaKey) {
+            const gastos = cargarGastosSinMeta();
+            const clave = `${panelId}::${campaniaKey}`;
+            return parseFloat(gastos[clave] || 0);
+        }
+
+        function actualizarGastoSinMetaDesdeInput(input) {
+            if (!input) return;
+
+            const panelId = input.getAttribute('data-panel-id') || '';
+            const campaniaKey = decodeURIComponent(input.getAttribute('data-campania-key') || '');
+            const mensajes = parseInt(input.getAttribute('data-mensajes') || '0', 10);
+            const valorLimpio = (input.value || '').replace(',', '.');
+            const gasto = Math.max(0, parseFloat(valorLimpio) || 0);
+
+            const gastos = cargarGastosSinMeta();
+            gastos[`${panelId}::${campaniaKey}`] = gasto;
+            guardarGastosSinMeta(gastos);
+
+            const fila = input.closest('.campaign-bar-sin-meta');
+            if (!fila) return;
+
+            const costo = mensajes > 0 ? gasto / mensajes : 0;
+            const costoEl = fila.querySelector('.costo-manual-sin-meta');
+            const costoWrap = fila.querySelector('.costo-manual-wrapper');
+
+            if (costoEl) {
+                costoEl.textContent = `$${costo.toFixed(2)}`;
+            }
+
+            if (costoWrap) {
+                costoWrap.classList.remove('precio-verde', 'precio-amarillo', 'precio-naranja', 'precio-rojo');
+                costoWrap.classList.add(getColorClassForPrice(costo));
+            }
         }
 
         function validarDatosVPS(data) {
@@ -2921,6 +3011,13 @@
                     totalAds += campania.metricas_diarias?.messages || 0;
                     totalClv += campania.cly_para_campania || 0;
                 });
+
+                const filasSinCoincidencia = obtenerFilasSinCoincidenciaMeta(panel, campaniasFiltradas);
+                if (filasSinCoincidencia.length > 0) {
+                    filasSinCoincidencia.forEach(fila => {
+                        html += generarBarraSinCoincidenciaMeta(panel, fila);
+                    });
+                }
                 
                 // Agregar los mensajes sin campaña al total CLY
                 totalClv += sinCampana;
@@ -2942,6 +3039,16 @@
                 </div>`;
             } else {
                 html += '<div style="padding: 16px; color: #999; font-size: 15px;">Sin campañas con gasto</div>';
+
+                const filasSinCoincidencia = obtenerFilasSinCoincidenciaMeta(panel, []);
+                if (filasSinCoincidencia.length > 0) {
+                    html += '<div class="campaigns-list">';
+                    filasSinCoincidencia.forEach(fila => {
+                        html += generarBarraSinCoincidenciaMeta(panel, fila);
+                    });
+                    html += '</div>';
+                }
+
                 const totalClvSinCampanias = sinCampana;
                 const porcentajeSinCampanias = objetivoActual > 0 ? Math.round((totalClvSinCampanias / objetivoActual) * 100) : 0;
                 const claseProgresoSinCampanias = porcentajeSinCampanias >= 100 ? 'progreso-completo' : 
@@ -2959,6 +3066,91 @@
 
             html += '</div>';
             return html;
+        }
+
+        function obtenerFilasSinCoincidenciaMeta(panel, campaniasFiltradas) {
+            const resultado = [];
+            const campañasPanel = panel.campañas || {};
+
+            Object.entries(campañasPanel).forEach(([nombreCampania, datosCampania]) => {
+                if (nombreCampania === 'SIN_CAMPAÑA') return;
+
+                const mensajes = parseInt(datosCampania?.mensajes || 0, 10);
+                const cargas = parseInt(datosCampania?.cargas || 0, 10);
+
+                if (mensajes <= 0) return;
+
+                const nombreNormalizado = normalizarNombre(nombreCampania);
+                let tieneCoincidenciaMeta = false;
+
+                if (nombreCampania.length === 1) {
+                    const letra = nombreCampania.toUpperCase();
+                    tieneCoincidenciaMeta = campaniasFiltradas.some(c => {
+                        const match = c.nombre?.match(/-([a-z])-/i);
+                        return match && match[1] && match[1].toUpperCase() === letra;
+                    });
+                } else {
+                    tieneCoincidenciaMeta = campaniasFiltradas.some(c => {
+                        const nombreMetaNormalizado = normalizarNombre(c.nombre || '');
+                        return nombreMetaNormalizado.includes(nombreNormalizado) || nombreNormalizado.includes(nombreMetaNormalizado);
+                    });
+                }
+
+                if (!tieneCoincidenciaMeta) {
+                    resultado.push({
+                        campania: nombreCampania,
+                        mensajes,
+                        cargas
+                    });
+                }
+            });
+
+            return resultado;
+        }
+
+        function generarBarraSinCoincidenciaMeta(panel, fila) {
+            const campaniaEncoded = encodeURIComponent(fila.campania);
+            const gastoManual = obtenerGastoManualSinMeta(panel.id, fila.campania);
+            const costoManual = fila.mensajes > 0 ? gastoManual / fila.mensajes : 0;
+            const colorClass = getColorClassForPrice(costoManual);
+
+            return `
+                <div class="campaign-bar campaign-bar-sin-meta">
+                    <span class="campaign-bar-name">Resultados sin coincidencias en Meta Ads: ${fila.campania}</span>
+                    <div class="campaign-bar-stats">
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-label">Gasto Manual</span>
+                            <input
+                                type="number"
+                                class="input-gasto-sin-meta"
+                                data-panel-id="${panel.id}"
+                                data-campania-key="${campaniaEncoded}"
+                                data-mensajes="${fila.mensajes}"
+                                min="0"
+                                step="0.01"
+                                value="${gastoManual}"
+                                oninput="actualizarGastoSinMetaDesdeInput(this)"
+                            >
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-label">Mensajes</span>
+                            <span class="campaign-stat-value">${fila.mensajes}</span>
+                        </div>
+                        <div class="campaign-stat-item costo-manual-wrapper ${colorClass}">
+                            <span class="campaign-stat-label">$ / Msg</span>
+                            <span class="campaign-stat-value costo-manual-sin-meta">$${costoManual.toFixed(2)}</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-label">Cargas</span>
+                            <span class="campaign-stat-value">${fila.cargas}</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-label">Origen</span>
+                            <span class="campaign-stat-value">Clientify</span>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         /**
