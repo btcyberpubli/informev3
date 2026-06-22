@@ -849,6 +849,30 @@
             border-color: #9c7a35;
         }
 
+        .input-nombre-sin-meta {
+            width: 280px;
+            max-width: 100%;
+            padding: 3px 6px;
+            font-size: 11px;
+            border: 1px solid #d5b77a;
+            border-radius: 3px;
+            font-weight: 600;
+            color: #2c3e50;
+            background: #fffdf7;
+        }
+
+        .input-nombre-sin-meta:focus {
+            outline: none;
+            border-color: #f39c12;
+            box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.2);
+        }
+
+        body.dark-mode .input-nombre-sin-meta {
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            border-color: #9c7a35;
+        }
+
         .campaign-bar.campaign-bar-paused .campaign-bar-name,
         .campaign-bar.campaign-bar-paused .campaign-stat-label,
         .campaign-bar.campaign-bar-paused .campaign-stat-value {
@@ -1873,6 +1897,7 @@
         let ultimaActualizacion = null;
         let autoRefreshId = null;
         const STORAGE_KEY_GASTOS_SIN_META = 'gastos_sin_meta_manual';
+        const STORAGE_KEY_NOMBRES_SIN_META = 'nombres_sin_meta_manual';
 
         // ========== FUNCIONES AUXILIARES ==========
 
@@ -1911,10 +1936,53 @@
             }
         }
 
+        function cargarNombresSinMeta() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY_NOMBRES_SIN_META);
+                return raw ? JSON.parse(raw) : {};
+            } catch (error) {
+                console.warn('⚠️ No se pudo leer nombres manuales sin Meta:', error);
+                return {};
+            }
+        }
+
+        function guardarNombresSinMeta(data) {
+            try {
+                localStorage.setItem(STORAGE_KEY_NOMBRES_SIN_META, JSON.stringify(data));
+            } catch (error) {
+                console.warn('⚠️ No se pudo guardar nombres manuales sin Meta:', error);
+            }
+        }
+
         function obtenerGastoManualSinMeta(panelId, campaniaKey) {
             const gastos = cargarGastosSinMeta();
             const clave = `${panelId}::${campaniaKey}`;
             return parseFloat(gastos[clave] || 0);
+        }
+
+        function obtenerNombreManualSinMeta(panelId, campaniaKey) {
+            const nombres = cargarNombresSinMeta();
+            const clave = `${panelId}::${campaniaKey}`;
+            return (nombres[clave] || '').toString();
+        }
+
+        function actualizarNombreSinMetaDesdeInput(input) {
+            if (!input) return;
+
+            const panelId = input.getAttribute('data-panel-id') || '';
+            const campaniaKey = decodeURIComponent(input.getAttribute('data-campania-key') || '');
+            const valor = (input.value || '').trim();
+
+            const nombres = cargarNombresSinMeta();
+            const clave = `${panelId}::${campaniaKey}`;
+
+            if (valor) {
+                nombres[clave] = valor;
+            } else {
+                delete nombres[clave];
+            }
+
+            guardarNombresSinMeta(nombres);
         }
 
         function actualizarGastoSinMetaDesdeInput(input) {
@@ -3111,12 +3179,24 @@
         function generarBarraSinCoincidenciaMeta(panel, fila) {
             const campaniaEncoded = encodeURIComponent(fila.campania);
             const gastoManual = obtenerGastoManualSinMeta(panel.id, fila.campania);
+            const nombreManual = obtenerNombreManualSinMeta(panel.id, fila.campania);
             const costoManual = fila.mensajes > 0 ? gastoManual / fila.mensajes : 0;
             const colorClass = getColorClassForPrice(costoManual);
 
             return `
                 <div class="campaign-bar campaign-bar-sin-meta">
-                    <span class="campaign-bar-name">Resultados sin coincidencias en Meta Ads: ${fila.campania}</span>
+                    <div class="campaign-bar-name" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; width: 100%;">
+                        <span>Resultados sin coincidencias en Meta Ads:</span>
+                        <input
+                            type="text"
+                            class="input-nombre-sin-meta"
+                            data-panel-id="${panel.id}"
+                            data-campania-key="${campaniaEncoded}"
+                            placeholder="${fila.campania}"
+                            value="${nombreManual.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"
+                            oninput="actualizarNombreSinMetaDesdeInput(this)"
+                        >
+                    </div>
                     <div class="campaign-bar-stats">
                         <div class="campaign-stat-item">
                             <span class="campaign-stat-label">Gasto Manual</span>
