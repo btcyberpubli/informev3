@@ -879,6 +879,73 @@
             color: #2c3e50 !important;
         }
 
+        /* ESTILOS PARA TOGGLE SWITCH - CAMPAÑAS SIN META */
+        .toggle-sin-meta-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-right: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 22px;
+            background: #bdc3c7;
+            border-radius: 11px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toggle-switch.active {
+            background: #27ae60;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            left: 20px;
+        }
+
+        .toggle-status-text {
+            font-size: 9px;
+            font-weight: 700;
+            min-width: 45px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            color: var(--text-secondary);
+        }
+
+        .toggle-status-text.active {
+            color: #27ae60;
+        }
+
+        .toggle-status-text.paused {
+            color: #c0392b;
+        }
+
+        .texto-sin-coincidencias {
+            font-size: 8px;
+            font-weight: 600;
+            color: #f39c12;
+        }
+
         .campaign-bar-name {
             min-width: auto;
             font-weight: 600;
@@ -1898,6 +1965,7 @@
         let autoRefreshId = null;
         const STORAGE_KEY_GASTOS_SIN_META = 'gastos_sin_meta_manual';
         const STORAGE_KEY_NOMBRES_SIN_META = 'nombres_sin_meta_manual';
+        const STORAGE_KEY_ESTADO_SIN_META = 'estado_sin_meta_pausada';
 
         // ========== FUNCIONES AUXILIARES ==========
 
@@ -1952,6 +2020,40 @@
             } catch (error) {
                 console.warn('⚠️ No se pudo guardar nombres manuales sin Meta:', error);
             }
+        }
+
+        // ===== FUNCIONES PARA ESTADO (ACTIVA/PAUSADA) DE CAMPAÑAS SIN META =====
+        function cargarEstadoSinMeta() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY_ESTADO_SIN_META);
+                return raw ? JSON.parse(raw) : {};
+            } catch (error) {
+                console.warn('⚠️ No se pudo leer estado sin Meta:', error);
+                return {};
+            }
+        }
+
+        function guardarEstadoSinMeta(data) {
+            try {
+                localStorage.setItem(STORAGE_KEY_ESTADO_SIN_META, JSON.stringify(data));
+            } catch (error) {
+                console.warn('⚠️ No se pudo guardar estado sin Meta:', error);
+            }
+        }
+
+        function obtenerEstadoSinMeta(panelId, campaniaKey) {
+            const estados = cargarEstadoSinMeta();
+            const clave = `${panelId}::${campaniaKey}`;
+            // Retorna true si está pausada, false si está activa
+            return estados[clave] === true;
+        }
+
+        function toggleEstadoSinMeta(panelId, campaniaKey) {
+            const estados = cargarEstadoSinMeta();
+            const clave = `${panelId}::${campaniaKey}`;
+            estados[clave] = !estados[clave];
+            guardarEstadoSinMeta(estados);
+            return estados[clave];
         }
 
         function obtenerGastoManualSinMeta(panelId, campaniaKey) {
@@ -3182,11 +3284,15 @@
             const nombreManual = obtenerNombreManualSinMeta(panel.id, fila.campania);
             const costoManual = fila.mensajes > 0 ? gastoManual / fila.mensajes : 0;
             const colorClass = getColorClassForPrice(costoManual);
+            const estaPausada = obtenerEstadoSinMeta(panel.id, fila.campania);
+            const clasePausada = estaPausada ? 'campaign-bar-paused' : '';
+            const estadoTexto = estaPausada ? 'Pausada' : 'Activa';
+            const claseEstado = estaPausada ? 'paused' : 'active';
 
             return `
-                <div class="campaign-bar campaign-bar-sin-meta">
-                    <div class="campaign-bar-name" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; width: 100%;">
-                        <span>Resultados sin coincidencias en Meta Ads:</span>
+                <div class="campaign-bar campaign-bar-sin-meta ${clasePausada}">
+                    <div style="width: 100%; display: flex; flex-direction: column; gap: 4px;">
+                        <span class="texto-sin-coincidencias">Resultados sin coincidencias en Meta Ads:</span>
                         <input
                             type="text"
                             class="input-nombre-sin-meta"
@@ -3228,9 +3334,41 @@
                             <span class="campaign-stat-label">Origen</span>
                             <span class="campaign-stat-value">Clientify</span>
                         </div>
+                        <div class="campaign-stat-item" style="gap: 4px;">
+                            <span class="toggle-sin-meta-label">Estado:</span>
+                            <button 
+                                class="toggle-switch ${estaPausada ? '' : 'active'}"
+                                onclick="toggleEstadoCampania(this, '${panel.id}', '${campaniaEncoded}')"
+                                title="Click para cambiar entre Activa y Pausada"
+                            ></button>
+                            <span class="toggle-status-text ${claseEstado}">${estadoTexto}</span>
+                        </div>
                     </div>
                 </div>
             `;
+        }
+
+        // Función para manejar el click del toggle
+        function toggleEstadoCampania(toggleBtn, panelId, campaniaEncoded) {
+            const campaniaKey = decodeURIComponent(campaniaEncoded);
+            const estaPausada = toggleEstadoSinMeta(panelId, campaniaKey);
+            
+            const barraDiv = toggleBtn.closest('.campaign-bar');
+            const statusText = toggleBtn.nextElementSibling;
+            
+            if (estaPausada) {
+                barraDiv.classList.add('campaign-bar-paused');
+                statusText.textContent = 'Pausada';
+                statusText.classList.remove('active');
+                statusText.classList.add('paused');
+                toggleBtn.classList.remove('active');
+            } else {
+                barraDiv.classList.remove('campaign-bar-paused');
+                statusText.textContent = 'Activa';
+                statusText.classList.remove('paused');
+                statusText.classList.add('active');
+                toggleBtn.classList.add('active');
+            }
         }
 
         /**
