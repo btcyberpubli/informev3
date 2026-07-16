@@ -2976,81 +2976,8 @@
                                 fuente_origen: detectarFuenteCampania(campaniaName, panel)  // ✅ NUEVO
                             });
                         } else {
-                            datosGlobales.reportePaneles?.forEach(panel => {
-                                if (campaniaEncontrada) return;
-                                
-                                const panelName = panel.panel.toLowerCase().trim();
-                                // Solo match por usuario si el usuario name es largo y específico
-                                if (userName.length >= 4 && campaniaName.includes(userName)) {
-                                    campaniaEncontrada = true;
-                                    campaniasMapeadas.add(campaniaId);
-                                    
-                                    if (!mapeo[panel.panel]) {
-                                        mapeo[panel.panel] = [];
-                                        usuariosPanel[panel.panel] = nombreUsuario;
-                                    }
-                                    
-                                    let clyParaCampania = 0;
-                                    let cargasParaCampania = 0;
-                                    
-                                    // 🔍 PASO 1: Buscar por LETRA (A, B, C...)
-                                    const letraMatch = campaniaName.match(/-([a-z])-/i);
-                                    if (letraMatch && letraMatch[1]) {
-                                        const letraBuscada = letraMatch[1].toUpperCase();
-                                        if (panel.campañas && panel.campañas[letraBuscada]) {
-                                            const datosLetra = panel.campañas[letraBuscada];
-                                            clyParaCampania = datosLetra.mensajes || 0;
-                                            cargasParaCampania = datosLetra.cargas || 0;
-                                        }
-                                    }
-                                    
-                                    // 🔍 PASO 2: Si no encontró por letra, buscar por NOMBRE (para whaticket)
-                                    if (clyParaCampania === 0 && panel.campañas) {
-                                        for (const [nombreCampaniaPanel, datosPanel] of Object.entries(panel.campañas)) {
-                                            // Ignorar si es solo una letra (ej: "F", "A", "B")
-                                            if (nombreCampaniaPanel.length === 1 || nombreCampaniaPanel === 'SIN_CAMPAÑA') {
-                                                continue;
-                                            }
-                                            
-                                            // Buscar palabras clave del nombre en la campaña Meta
-                                            const nombreNormalizado = nombreCampaniaPanel.toLowerCase().trim();
-                                            const campaniaNameNormalizado = campaniaName.toLowerCase().trim();
-                                            
-                                            // Dividir en palabras para match más preciso
-                                            const palabrasPanel = nombreNormalizado.split(/\s+/);
-                                            const palabrasCampania = campaniaNameNormalizado.split(/[\s-]+/);
-                                            
-                                            // Si al menos 2 palabras coinciden = es un match
-                                            let coincidencias = 0;
-                                            for (const palabraPanel of palabrasPanel) {
-                                                if (palabraPanel.length > 2) {  // Solo palabras > 2 caracteres
-                                                    for (const palabraCampania of palabrasCampania) {
-                                                        if (palabraCampania.length > 2 && palabraPanel.includes(palabraCampania)) {
-                                                            coincidencias++;
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            
-                                            // Si hay al menos 1 coincidencia de palabra significativa = match
-                                            if (coincidencias >= 1) {
-                                                clyParaCampania = datosPanel.mensajes || 0;
-                                                cargasParaCampania = datosPanel.cargas || 0;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    
-                                    mapeo[panel.panel].push({
-                                        ...campania,
-                                        usuario: nombreUsuario,
-                                        cly_para_campania: clyParaCampania,
-                                        cargas_para_campania: cargasParaCampania,
-                                        fuente_origen: detectarFuenteCampania(campaniaName, panel)  // ✅ NUEVO
-                                    });
-                                }
-                            });
+                            // Sin fallback por usuario: si no hay match explícito por panel,
+                            // dejamos la campaña sin asignar para que vaya a "⚠️ Campañas Sin Datos de CRM".
                         }
                         
                         if (!campaniaEncontrada) {
