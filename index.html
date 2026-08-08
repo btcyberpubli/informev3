@@ -2873,6 +2873,27 @@
                             .trim();
                     }
 
+                    function tieneCoincidenciaCampaniaValida(nombreCampaniaPanel, nombreCampaniaMeta) {
+                        const panelNormalizado = normalizarTextoComparacion(nombreCampaniaPanel);
+                        const metaNormalizado = normalizarTextoComparacion(nombreCampaniaMeta);
+
+                        if (!panelNormalizado || !metaNormalizado) return false;
+                        if (panelNormalizado === metaNormalizado) return true;
+                        if (panelNormalizado.includes(metaNormalizado) || metaNormalizado.includes(panelNormalizado)) return true;
+
+                        const palabrasPanel = panelNormalizado
+                            .split(' ')
+                            .filter(p => p.length >= 2 && !/^\d+$/.test(p));
+                        const palabrasMeta = metaNormalizado
+                            .split(' ')
+                            .filter(p => p.length >= 2 && !/^\d+$/.test(p));
+
+                        if (palabrasPanel.length === 0 || palabrasMeta.length === 0) return false;
+
+                        const palabrasComunes = palabrasPanel.filter(p => palabrasMeta.includes(p));
+                        return palabrasComunes.length >= 2;
+                    }
+
                     // ✅ NUEVO: Helper para detectar si campaña es WTK o CLY
                     function detectarFuenteCampania(nombreCampania, panel) {
                         // Si tiene LETRA (A, B, C...) dentro del nombre = CLY (Clientify)
@@ -2962,39 +2983,8 @@
                                             const nombreNormalizado = normalizarTextoComparacion(nombreCampaniaPanel);
                                             const campaniaNameNormalizado = normalizarTextoComparacion(campaniaName);
 
-                                            const palabrasPanel = nombreNormalizado
-                                                .split(' ')
-                                                .filter(p => p.length >= 2 && !/^\d+$/.test(p));
-                                            const palabrasCampania = campaniaNameNormalizado
-                                                .split(' ')
-                                                .filter(p => p.length >= 2 && !/^\d+$/.test(p));
-
-                                            let coincidencias = 0;
-                                            let tieneMatchFuerte = false;
-
-                                            for (const palabraPanel of palabrasPanel) {
-                                                const coincide = palabrasCampania.some(palabraCampania => {
-                                                    if (palabraPanel === palabraCampania) return true;
-                                                    if (palabraPanel.includes(palabraCampania) || palabraCampania.includes(palabraPanel)) return true;
-
-                                                    // Tolerancia a typo leve: mismo prefijo de 5 caracteres.
-                                                    if (palabraPanel.length >= 5 && palabraCampania.length >= 5) {
-                                                        return palabraPanel.slice(0, 5) === palabraCampania.slice(0, 5);
-                                                    }
-
-                                                    return false;
-                                                });
-
-                                                if (coincide) {
-                                                    coincidencias++;
-                                                    if (palabraPanel.length >= 4) {
-                                                        tieneMatchFuerte = true;
-                                                    }
-                                                }
-                                            }
-
-                                            // Exigimos al menos una coincidencia fuerte para evitar falsos positivos.
-                                            if (coincidencias >= 1 && tieneMatchFuerte) {
+                                            const matchValido = tieneCoincidenciaCampaniaValida(nombreNormalizado, campaniaNameNormalizado);
+                                            if (matchValido) {
                                                 clyParaCampania = datosPanel.mensajes || 0;
                                                 cargasParaCampania = datosPanel.cargas || 0;
                                                 break;
@@ -3223,7 +3213,14 @@
                         } else {
                             tieneCoincidenciaMeta = campaniasFiltradas.some(c => {
                                 const nombreMetaNormalizado = normalizarNombre(c.nombre || '');
-                                return nombreMetaNormalizado.includes(nombreNormalizado) || nombreNormalizado.includes(nombreMetaNormalizado);
+                                const mismoNombre = nombreMetaNormalizado === nombreNormalizado;
+                                const incluyeNombre = nombreMetaNormalizado.includes(nombreNormalizado) || nombreNormalizado.includes(nombreMetaNormalizado);
+                                if (mismoNombre || incluyeNombre) return true;
+
+                                const palabrasPanel = nombreNormalizado.split(' ').filter(p => p.length >= 2 && !/^\d+$/.test(p));
+                                const palabrasMeta = nombreMetaNormalizado.split(' ').filter(p => p.length >= 2 && !/^\d+$/.test(p));
+                                const palabrasComunes = palabrasPanel.filter(p => palabrasMeta.includes(p));
+                                return palabrasComunes.length >= 2;
                             });
                         }
 
