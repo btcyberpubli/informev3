@@ -2269,6 +2269,15 @@
                     return mapa[clave] || { landing: '', mensajes: '' };
                 }
 
+                function obtenerMensajesActualesLanding463(landing, fallbackMensajes = 0) {
+                    const metricas = landing ? obtenerMetricasLanding463(landing) : { encontrada: false, mensajes: 0 };
+                    if (metricas && metricas.encontrada && Number.isFinite(parseInt(metricas.mensajes || 0, 10))) {
+                        return Math.max(0, parseInt(metricas.mensajes || 0, 10));
+                    }
+                    const valorFallback = parseInt(fallbackMensajes || 0, 10);
+                    return Number.isFinite(valorFallback) ? Math.max(0, valorFallback) : 0;
+                }
+
                 function guardarAsignacionCampania463(campaniaId, landing, mensajes) {
                     const mapa = cargarAsignacionesCampanias463();
                     const clave = normalizarClaveCampania463(campaniaId);
@@ -2297,7 +2306,7 @@
 
                     const landing = (select.value || '').trim();
                     const metricasLanding = obtenerMetricasLanding463(landing);
-                    const mensajes = Math.max(0, parseInt(input.value || metricasLanding.mensajes || 0, 10) || 0);
+                    const mensajes = obtenerMensajesActualesLanding463(landing, input.value || metricasLanding.mensajes || 0);
 
                     if (!landing) {
                         feedback.textContent = 'Elegí una landing 463';
@@ -3463,8 +3472,11 @@
                             campaniasFiltradas.forEach(campania => {
                                 html += generarBarraCampania(campania, panel.id);
                             totalAds += campania.metricas_diarias?.messages || 0;
+                                const claveCampania = campania.id || campania.nombre || '';
+                                const asignacionCampania = panel.id === '463' ? obtenerAsignacionCampania463(claveCampania) : { landing: '', mensajes: 0 };
+                                const landingCampania = String(asignacionCampania.landing || '').trim();
                                 const clvBase = panel.id === '463'
-                                    ? parseInt(obtenerAsignacionCampania463(campania.id || campania.nombre || '').mensajes || 0, 10)
+                                    ? obtenerMensajesActualesLanding463(landingCampania, asignacionCampania.mensajes)
                                     : (campania.cly_para_campania || 0);
                                 totalClv += clvBase;
                         });
@@ -3701,7 +3713,7 @@
                     const landingSeleccionada = String(asignacion463.landing || '').trim();
                     const metricasLandingSeleccionada = landingSeleccionada ? obtenerMetricasLanding463(landingSeleccionada) : { encontrada: false, nombre: '', mensajes: 0, cargas: 0, registros_totales: 0, costo_x_registro: 0, total_primeras_cargas: 0, porcentaje_primeras_cargas: 0, cargas_totales: 0, porcentaje_cargas_totales: 0 };
                     const mensajesAsignados463 = esPanel463
-                        ? Math.max(0, parseInt(asignacion463.mensajes || (metricasLandingSeleccionada.encontrada ? metricasLandingSeleccionada.mensajes : 0) || 0, 10) || 0)
+                        ? obtenerMensajesActualesLanding463(landingSeleccionada, asignacion463.mensajes)
                         : 0;
                     
                     // ADS = metricas_diarias.messages (de Meta Ads)
