@@ -892,7 +892,7 @@
                                 + '<span class="campaign-stat-value">' + adsMensajes + '</span>'
                                 + '</div>'
                                 + '<div class="campaign-stat-item ' + colorClass + '">'
-                                + '<span class="campaign-stat-label">$ / Msg</span>'
+                                + '<span class="campaign-stat-label">Costo x registro</span>'
                                 + '<span class="campaign-stat-value">$' + costoPorMensaje.toFixed(2) + '</span>'
                                 + '</div>'
                                 + '<div class="campaign-stat-item">'
@@ -913,7 +913,7 @@
 
                             html += '<div class="totales-cargas ' + claseProgreso + '">'
                                 + '💰 <span class="totales-label">Gasto Total</span>: <span class="totales-valor">$' + totalGasto.toFixed(2) + '</span>'
-                                + ' | 📨 <span class="totales-label">Mensajes</span>: <span class="totales-valor">' + totalMensajes + '</span>'
+                                + ' | 📨 <span class="totales-label">Registros</span>: <span class="totales-valor">' + totalMensajes + '</span>'
                                 + ' | 📊 <span class="totales-label">Promedio</span>: <span class="totales-valor">$' + costoPorMensajePromedio.toFixed(2) + '</span>'
                                 + '</div>';
                         }
@@ -2195,16 +2195,18 @@
                     }
 
                     const datosCampania = campañas[nombreReal] || {};
+                    // Soportar distintos nombres de campo: `registros`, `registros_totales` o `mensajes`
+                    const registrosVal = parseInt(datosCampania.registros || datosCampania.registros_totales || datosCampania.mensajes || 0, 10);
                     return {
                         encontrada: true,
                         nombre: nombreReal,
-                        mensajes: parseInt(datosCampania.mensajes || datosCampania.registros_totales || 0, 10),
+                        mensajes: registrosVal,
                         cargas: parseInt(datosCampania.cargas || 0, 10),
-                        registros_totales: parseInt(datosCampania.registros_totales || datosCampania.mensajes || 0, 10),
-                        costo_x_registro: parseFloat(datosCampania.costo_x_registro || 0) || 0,
+                        registros_totales: registrosVal,
+                        costo_x_registro: parseFloat(typeof datosCampania.costo_x_registro !== 'undefined' ? datosCampania.costo_x_registro : 0) || 0,
                         total_primeras_cargas: parseInt(datosCampania.total_primeras_cargas || 0, 10),
                         porcentaje_primeras_cargas: parseFloat(datosCampania.porcentaje_primeras_cargas || 0) || 0,
-                        cargas_totales: parseInt(datosCampania.cargas_totales || datosCampania.cargas || 0, 10),
+                        cargas_totales: parseInt(typeof datosCampania.cargas_totales !== 'undefined' ? datosCampania.cargas_totales : (datosCampania.cargas || 0), 10) || 0,
                         porcentaje_cargas_totales: parseFloat(datosCampania.porcentaje_cargas_totales || 0) || 0
                     };
                 }
@@ -2306,7 +2308,7 @@
 
                     guardarAsignacionCampania463(campaniaId, landing, mensajes);
 
-                    const landingTexto = metricasLanding.encontrada ? `${metricasLanding.nombre}: ${metricasLanding.mensajes} mensajes` : landing;
+                    const landingTexto = metricasLanding.encontrada ? `${metricasLanding.nombre}: ${metricasLanding.mensajes} registros` : landing;
                     feedback.textContent = `Guardado: ${landingTexto} | Asignados: ${mensajes}`;
                     feedback.classList.remove('warn');
                     feedback.classList.add('ok');
@@ -3024,7 +3026,7 @@
                                 + '<span class="campaign-stat-value">' + clyMensajes + '</span>'
                                 + '</div>'
                                 + '<div class="campaign-stat-item ' + colorClass + '">'
-                                + '<span class="campaign-stat-label">$ / Msg</span>'
+                                + '<span class="campaign-stat-label">Costo x registro</span>'
                                 + '<span class="campaign-stat-value">$' + costoPorMensaje.toFixed(2) + '</span>'
                                 + '</div>'
                                 + '<div class="campaign-stat-item">'
@@ -3057,7 +3059,7 @@
                             
                             html += '<div class="totales-cargas ' + claseProgreso + '">'
                                 + '💰 <span class="totales-label">Gasto Total</span>: <span class="totales-valor">$' + totalGasto.toFixed(2) + '</span>'
-                                + ' | 📨 <span class="totales-label">Mensajes</span>: <span class="totales-valor">' + totalMensajes + '</span>'
+                                + ' | 📨 <span class="totales-label">Registros</span>: <span class="totales-valor">' + totalMensajes + '</span>'
                                 + ' | 📊 <span class="totales-label">Promedio</span>: <span class="totales-valor">$' + costoPorMensajePromedio.toFixed(2) + '</span>'
                                 + '</div>';
                         }
@@ -3132,7 +3134,7 @@
                             
                             html += '<div class="totales-cargas ' + claseProgreso + '">'
                                 + '💰 <span class="totales-label">Gasto Total</span>: <span class="totales-valor">$' + totalGasto.toFixed(2) + '</span>'
-                                + ' | 📨 <span class="totales-label">Mensajes</span>: <span class="totales-valor">' + totalMensajes + '</span>'
+                                + ' | 📨 <span class="totales-label">Registros</span>: <span class="totales-valor">' + totalMensajes + '</span>'
                                 + ' | 📊 <span class="totales-label">Promedio</span>: <span class="totales-valor">$' + costoPorMensajePromedio.toFixed(2) + '</span>'
                                 + '</div>';
 
@@ -3588,11 +3590,11 @@
                                     >
                                 </div>
                                 <div class="campaign-stat-item">
-                                    <span class="campaign-stat-label">Mensajes</span>
+                                    <span class="campaign-stat-label">Registros</span>
                                     <span class="campaign-stat-value">${fila.mensajes}</span>
                                 </div>
                                 <div class="campaign-stat-item costo-manual-wrapper ${colorClass}">
-                                    <span class="campaign-stat-label">$ / Msg</span>
+                                    <span class="campaign-stat-label">Costo x registro</span>
                                     <span class="campaign-stat-value costo-manual-sin-meta">$${costoManual.toFixed(2)}</span>
                                 </div>
                                 <div class="campaign-stat-item">
@@ -3735,8 +3737,8 @@
                     const landingFeedbackText = esPanel463
                         ? (landingSeleccionada
                             ? (metricasLandingSeleccionada.encontrada
-                                ? `Guardada: ${metricasLandingSeleccionada.nombre} | Mensajes: ${mensajesAsignados463}`
-                                : `Landing guardada: ${landingSeleccionada} | Mensajes: ${mensajesAsignados463}`)
+                                ? `Guardada: ${metricasLandingSeleccionada.nombre} | Registros: ${mensajesAsignados463}`
+                                : `Landing guardada: ${landingSeleccionada} | Registros: ${mensajesAsignados463}`)
                             : 'Elegí una landing 463 y guardá la asignación')
                         : '';
                     const landingFeedbackClass = esPanel463 && landingSeleccionada && mensajesAsignados463 > 0 ? 'ok' : 'warn';
@@ -4075,7 +4077,7 @@
                         if (totalNuevoAsignado > sinCampanaDisponibles) {
                             const exceso = totalNuevoAsignado - sinCampanaDisponibles;
                             const errorMsg = document.getElementById('successMsg');
-                            errorMsg.textContent = `❌ No hay suficientes mensajes. Disponibles: ${sinCampanaDisponibles} | Intentas asignar: ${totalNuevoAsignado} (exceso: ${exceso})`;
+                            errorMsg.textContent = `❌ No hay suficientes registros. Disponibles: ${sinCampanaDisponibles} | Intentas asignar: ${totalNuevoAsignado} (exceso: ${exceso})`;
                             errorMsg.style.background = '#e74c3c';
                             errorMsg.classList.add('show');
                             
